@@ -1,3 +1,4 @@
+package Enviroment;
 import java.util.*;
 
 class Point3D {
@@ -66,9 +67,6 @@ abstract class Asset {
         else if (position.x > ziel.x) position.x--;
         if (position.y < ziel.y) position.y++;
         else if (position.y > ziel.y) position.y--;
-        // adjust z position as well
-        if (position.z < ziel.z) position.z++;
-        else if (position.z > ziel.z) position.z--;
     }
 }
 
@@ -124,7 +122,7 @@ class Coordinator {
                     Task current = a.taskList.get(0);
                     if (!current.completed) {
                         a.move(current.position);
-                        if (a.position.x == current.position.x && a.position.y == current.position.y && a.position.z == current.position.z) {
+                        if (a.position.x == current.position.x && a.position.y == current.position.y) {
                             current.completed = true;
                             a.state = "Task complete";
                         } else {
@@ -168,3 +166,4 @@ public class Simulation {
         coordinator.simuliere(20);
     }
 }
+
