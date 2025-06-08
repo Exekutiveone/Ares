@@ -1,0 +1,14 @@
+# ECODE Project
+
+This repository contains experiments for controlling Raspberry Pi hardware (camera, servos, sensors) and running simple simulations.
+
+## Environment Module (Java)
+
+The `Environment` package now provides several Java classes used to represent a grid based scenario for simulations:
+
+- `Coord` – simple coordinate pair.
+- `GridMap` – 2D map that tracks obstacles, assets and targets.
+- `Asset` – basic actor with a status and battery value which can move on the map.
+- `Task` – description of work that may span multiple coordinates and have a priority.
+
+These classes form a starting point for building a more complete simulation in Java.
