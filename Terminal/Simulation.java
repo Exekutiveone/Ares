@@ -1,6 +1,9 @@
 package Terminal;
 
 import java.util.*;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.NonBlockingReader;
 
 class Point3D {
     int x, y, z;
@@ -218,7 +221,7 @@ class SimulationUI {
 }
 
 public class Simulation {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Wähle Map (z.B. 1):");
         int mapNr = scanner.nextInt();
@@ -232,13 +235,37 @@ public class Simulation {
         robot.position = new Point3D(2, 2, 0);
         robot.speed = 1;
 
-        Task task = new Task(new Point3D(10, 10, 0), "inspect");
+        Terminal terminal = TerminalBuilder.terminal();
+        terminal.enterRawMode();
+        NonBlockingReader reader = terminal.reader();
 
-        List<Asset> assets = Arrays.asList(robot);
-        List<Task> tasks = Arrays.asList(task);
+        System.out.println("Nutze die Pfeiltasten um den Roboter zu bewegen (q zum Beenden).");
+        int time = 0;
+        while (true) {
+            SimulationUI.logStatus(time++, env, Arrays.asList(robot), Collections.emptyList());
+            int ch = reader.read();
+            if (ch == 'q') break;
 
-        Coordinator coordinator = new Coordinator(env, assets, tasks);
-        coordinator.verteileAufgaben();
-        coordinator.simuliere(20);
+            int dx = 0, dy = 0;
+            if (ch == 27) {
+                int ch2 = reader.read();
+                if (ch2 == '[') {
+                    int ch3 = reader.read();
+                    switch (ch3) {
+                        case 'A': dy = -1; break; // up
+                        case 'B': dy = 1; break;  // down
+                        case 'C': dx = 1; break;  // right
+                        case 'D': dx = -1; break; // left
+                    }
+                }
+            }
+
+            Point3D next = new Point3D(robot.position.x + dx, robot.position.y + dy, robot.position.z);
+            if (!env.istKollision(next)) {
+                robot.position = next;
+            }
+        }
+
+        terminal.close();
     }
 }
