@@ -1,3 +1,6 @@
+const GRID_WIDTH = 20;
+const GRID_HEIGHT = 20;
+
 class GridMap {
   constructor(width, height) {
     this.width = width;
@@ -24,6 +27,10 @@ class GridMap {
 
   placeAsset(asset, x, y) {
     if (this.inBounds(x, y)) {
+      if (this.inBounds(asset.x, asset.y) &&
+          this.cells[asset.y][asset.x].assetId === asset.id) {
+        this.cells[asset.y][asset.x].assetId = null;
+      }
       this.cells[y][x].assetId = asset.id;
       asset.x = x;
       asset.y = y;
@@ -49,7 +56,7 @@ class Task {
 }
 
 const state = {
-  map: new GridMap(20, 20),
+  map: new GridMap(GRID_WIDTH, GRID_HEIGHT),
   assets: [],
   tasks: [],
   povMode: false,
@@ -67,6 +74,7 @@ function init() {
   }
   updateAssetList();
   updateTaskList();
+  setGridSize(state.map.width, state.map.height);
   renderGrid();
   document.getElementById('editMode').addEventListener('change', onModeChange);
   document.getElementById('toggleView').addEventListener('click', toggleView);
@@ -97,6 +105,12 @@ function renderGrid() {
   }
 }
 
+function setGridSize(width, height) {
+  const root = document.documentElement;
+  root.style.setProperty('--grid-width', width);
+  root.style.setProperty('--grid-height', height);
+}
+
 function getAllCells() {
   const cells = [];
   for (let y = 0; y < state.map.height; y++) {
@@ -115,8 +129,8 @@ function getAllCells() {
 function getPOVCells() {
   const asset = state.assets.find(a => a.id === state.selectedAssetId) || state.assets[0];
   const cells = [];
-  const startX = asset.x - 1;
-  const endX = asset.x + 1;
+  const startX = asset.x - 2; // ~1.5m to the left
+  const endX = asset.x + 2;  // ~1.5m to the right
   const endY = asset.y + 7;
   for (let y = asset.y - 1; y <= endY; y++) {
     for (let x = startX; x <= endX; x++) {
@@ -142,6 +156,7 @@ function onCellClick(e) {
     state.map.setType(x, y, mode);
   }
   renderGrid();
+  updateAssetList();
 }
 
 function updateAssetList() {

@@ -17,4 +17,15 @@ These classes form a starting point for building a more complete simulation in J
 
 The `frontend` folder contains a small HTML/JS interface that visualizes the `GridMap` structure. The UI lets you mark obstacles, targets and walkable cells, place assets and assign simple tasks. A toggle is provided to switch between the full map and a POV style view around a selected asset.
 
-Open `frontend/index.html` in a browser to try it out. No backend connectivity is required.
+### Running the frontend
+
+The prototype lives inside the `frontend` folder. Any static HTTP server can be
+used to view it locally. One option bundled with Python is:
+
+```bash
+cd frontend
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000` in your browser. No backend connectivity is
+required.

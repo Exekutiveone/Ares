@@ -16,18 +16,24 @@ body {
   flex-direction: row;
 }
 
+:root {
+  --grid-width: 20;
+  --grid-height: 20;
+  --cell-size: 30px;
+}
+
 #grid {
   display: grid;
-  grid-template-columns: repeat(20, 30px);
-  grid-template-rows: repeat(20, 30px);
+  grid-template-columns: repeat(var(--grid-width), var(--cell-size));
+  grid-template-rows: repeat(var(--grid-height), var(--cell-size));
   gap: 1px;
   background: #888;
   padding: 10px;
 }
 
 .cell {
-  width: 30px;
-  height: 30px;
+  width: var(--cell-size);
+  height: var(--cell-size);
   background: #fff;
   display: flex;
   align-items: center;
