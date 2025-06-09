@@ -22,3 +22,32 @@ Open `frontend/index.html` in a browser to try it out. No backend connectivity i
 ## Backend
 
 The `Backend` folder documents how to set up a PostgreSQL server and how the Java client connects to it. See `Backend/config_server.md` for the step-by-step instructions used in the home lab.
+
+## Flask Map API Example
+
+A small Flask application is provided in `Backend/map_api.py` to store maps in PostgreSQL.
+Install dependencies with:
+
+```bash
+pip install -r Backend/requirements.txt
+```
+
+Start the server:
+
+```bash
+python Backend/map_api.py
+```
+
+It expects a table `maps` with the following schema:
+
+```sql
+CREATE TABLE maps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    data JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT now()
+);
+```
+
+Send a `POST` request to `/api/maps` with JSON
+`{"name": "Map A", "map": {...}}` to save a map.

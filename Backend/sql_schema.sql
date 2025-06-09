@@ -55,3 +55,11 @@ CREATE TABLE asset_log (
     timestamp TIMESTAMP DEFAULT NOW(),
     source TEXT
 );
+
+-- === Maps API ===
+CREATE TABLE maps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    data JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT now()
+);

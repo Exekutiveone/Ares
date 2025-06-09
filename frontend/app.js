@@ -83,6 +83,7 @@ function init() {
   document.getElementById('toggleView').addEventListener('click', toggleView);
   document.getElementById('calcPath').addEventListener('click', calculatePath);
   document.getElementById('saveMap').addEventListener('click', saveMap);
+  document.getElementById('saveMapDb').addEventListener('click', uploadMap);
   document.getElementById('loadMapBtn').addEventListener('click', () => document.getElementById('loadMap').click());
   document.getElementById('loadMap').addEventListener('change', loadMap);
   document.getElementById('assetSelect').addEventListener('change', e => {
@@ -285,19 +286,40 @@ function bfs(asset, targets) {
   return null;
 }
 
-function saveMap() {
-  const data = {
+function getCurrentMapData() {
+  return {
     width: state.map.width,
     height: state.map.height,
     cells: state.map.cells,
     assets: state.assets.map(a => ({id: a.id, x: a.x, y: a.y, battery: a.battery, taskId: a.taskId})),
     tasks: state.tasks.map(t => ({id: t.id, description: t.description, assignedAssetId: t.assignedAssetId}))
   };
+}
+
+function saveMap() {
+  const data = getCurrentMapData();
   const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'map.json';
   link.click();
+}
+
+function uploadMap() {
+  const name = document.getElementById('mapName').value.trim();
+  if (!name) {
+    alert('Enter map name');
+    return;
+  }
+  const data = getCurrentMapData();
+  fetch('/api/maps', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name: name, map: data})
+  }).then(res => {
+    if (res.ok) alert('Gespeichert');
+    else alert('Fehler beim Speichern');
+  });
 }
 
 function loadMap(e) {
