@@ -86,6 +86,8 @@ function init() {
   document.getElementById('saveMapDb').addEventListener('click', uploadMap);
   document.getElementById('loadMapBtn').addEventListener('click', () => document.getElementById('loadMap').click());
   document.getElementById('loadMap').addEventListener('change', loadMap);
+  document.getElementById('loadMapDb').addEventListener('click', loadMapFromDb);
+  document.getElementById('fetchMaps').addEventListener('click', fetchAvailableMaps);
   document.getElementById('assetSelect').addEventListener('change', e => {
     state.selectedAssetId = e.target.value;
   });
@@ -312,13 +314,15 @@ function uploadMap() {
     return;
   }
   const data = getCurrentMapData();
-  fetch('/api/maps', {
+  fetch('http://127.0.0.1:5000/api/maps', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name: name, map: data})
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, map: data })
   }).then(res => {
     if (res.ok) alert('Gespeichert');
-    else alert('Fehler beim Speichern');
+    else res.text().then(t => alert('Fehler beim Speichern:\n' + t));
+  }).catch(err => {
+    alert('Netzwerkfehler:\n' + err);
   });
 }
 
@@ -341,5 +345,48 @@ function loadMap(e) {
   };
   reader.readAsText(file);
 }
+
+function fetchAvailableMaps() {
+  fetch('http://127.0.0.1:5000/api/maps')
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('mapSelect');
+      select.innerHTML = '';
+      data.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.name + ' (' + m.created_at + ')';
+        select.appendChild(opt);
+      });
+    });
+}
+
+function loadMapFromDb() {
+  const mapId = document.getElementById('mapSelect').value;
+  if (!mapId) {
+    alert('Keine Map ausgewählt');
+    return;
+  }
+  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`)
+    .then(res => res.json())
+    .then(obj => {
+      state.map = new GridMap(obj.width, obj.height);
+      state.map.cells = obj.cells;
+      state.assets = obj.assets.map(a => Object.assign(new Asset(a.id), a));
+      state.tasks = obj.tasks.map(t => Object.assign(new Task(t.id, t.description), {assignedAssetId: t.assignedAssetId}));
+      setGridSize(state.map.width, state.map.height);
+      state.activeAssetId = null;
+      state.path = [];
+      updateAssetList();
+      updateTaskList();
+      renderGrid();
+    });
+}
+
+window.onload = () => {
+  init();
+  fetchAvailableMaps(); // ruft /api/maps auf
+};
+
 
 init();

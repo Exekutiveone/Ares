@@ -1,21 +1,20 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import psycopg2
 import uuid
 import json
-import os
 
 app = Flask(__name__)
-
+CORS(app)
 
 def get_conn():
     return psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=os.getenv("DB_PORT", "5432"),
-        dbname=os.getenv("DB_NAME", "ares"),
-        user=os.getenv("DB_USER", "ares"),
-        password=os.getenv("DB_PASSWORD", "ares"),
+        host="192.168.178.147",
+        port="5432",
+        dbname="ares",
+        user="ares",
+        password="ares"
     )
-
 
 @app.route('/api/maps', methods=['POST'])
 def save_map():
@@ -30,6 +29,34 @@ def save_map():
                 (str(uuid.uuid4()), data['name'], json.dumps(data['map']))
             )
         return jsonify({'status': 'ok'})
+    finally:
+        conn.close()
+
+
+@app.route('/api/maps', methods=['GET'])
+def list_maps():
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute("SELECT id, name, created_at FROM maps ORDER BY created_at DESC")
+            rows = cur.fetchall()
+            maps = [{"id": str(r[0]), "name": r[1], "created_at": r[2].isoformat()} for r in rows]
+        return jsonify(maps)
+    finally:
+        conn.close()
+
+
+@app.route('/api/maps/<map_id>', methods=['GET'])
+def get_map(map_id):
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute("SELECT data FROM maps WHERE id = %s", (map_id,))
+            row = cur.fetchone()
+            if row:
+                return jsonify(row[0])
+            else:
+                return jsonify({"error": "not found"}), 404
     finally:
         conn.close()
 
