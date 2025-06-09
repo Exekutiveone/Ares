@@ -19,6 +19,11 @@ The `frontend` folder contains a small HTML/JS interface that visualizes the `Gr
 
 Open `frontend/index.html` in a browser to try it out. No backend connectivity is required.
 
+## SimulateAsset Maze Editor
+
+The `SimulateAsset` directory provides an interactive maze editor. Open `SimulateAsset/maze_editor.html` in a browser to design a map with square obstacles and a movable target. You can auto-generate labyrinths with four-cell corridors and start a car to drive around. The target respawns at a random free cell when reached.
+
+
 ## Backend
 
 The `Backend` folder documents how to set up a PostgreSQL server and how the Java client connects to it. See `Backend/config_server.md` for the step-by-step instructions used in the home lab.
