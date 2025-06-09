@@ -61,5 +61,43 @@ def get_map(map_id):
         conn.close()
 
 
+@app.route('/api/maps/<map_id>', methods=['DELETE'])
+def delete_map(map_id):
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM maps WHERE id = %s", (map_id,))
+            if cur.rowcount == 0:
+                return jsonify({"error": "not found"}), 404
+        return jsonify({"status": "deleted"})
+    finally:
+        conn.close()
+
+
+@app.route('/api/maps/<map_id>', methods=['PUT'])
+def update_map(map_id):
+    data = request.get_json() or {}
+    fields = []
+    values = []
+    if 'name' in data:
+        fields.append('name = %s')
+        values.append(data['name'])
+    if 'map' in data:
+        fields.append('data = %s')
+        values.append(json.dumps(data['map']))
+    if not fields:
+        return jsonify({'error': 'no fields to update'}), 400
+    values.append(map_id)
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute(f"UPDATE maps SET {', '.join(fields)} WHERE id = %s", values)
+            if cur.rowcount == 0:
+                return jsonify({"error": "not found"}), 404
+        return jsonify({"status": "ok"})
+    finally:
+        conn.close()
+
+
 if __name__ == '__main__':
     app.run(debug=True)
