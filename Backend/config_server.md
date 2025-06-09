@@ -31,6 +31,16 @@ This document outlines how the backend database server was set up and how to con
    GRANT ALL PRIVILEGES ON DATABASE ares TO ares;
    ```
 
+   If you later see `permission denied for table assets`, grant the user
+   privileges to all tables and sequences:
+
+   ```sql
+   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ares;
+   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ares;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ares;
+   ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ares;
+   ```
+
 5. Allow port 5432 through the firewall (if active):
    ```bash
    sudo ufw allow 5432/tcp
