@@ -60,5 +60,49 @@ def get_asset(asset_id):
     finally:
         conn.close()
 
+
+@app.route('/api/assets/<asset_id>', methods=['DELETE'])
+def delete_asset(asset_id):
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM assets WHERE id = %s", (asset_id,))
+            if cur.rowcount == 0:
+                return jsonify({"error": "not found"}), 404
+        return jsonify({"status": "deleted"})
+    finally:
+        conn.close()
+
+
+@app.route('/api/assets/<asset_id>', methods=['PUT'])
+def update_asset(asset_id):
+    data = request.get_json() or {}
+    fields = []
+    values = []
+    if 'name' in data:
+        fields.append('name = %s')
+        values.append(data['name'])
+    if 'type' in data:
+        fields.append('type = %s')
+        values.append(data['type'])
+    if 'status' in data:
+        fields.append('status = %s')
+        values.append(data['status'])
+    if 'battery' in data:
+        fields.append('battery = %s')
+        values.append(data['battery'])
+    if not fields:
+        return jsonify({'error': 'no fields to update'}), 400
+    values.append(asset_id)
+    conn = get_conn()
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute(f"UPDATE assets SET {', '.join(fields)} WHERE id = %s", values)
+            if cur.rowcount == 0:
+                return jsonify({"error": "not found"}), 404
+        return jsonify({"status": "ok"})
+    finally:
+        conn.close()
+
 if __name__ == '__main__':
     app.run(debug=True)
