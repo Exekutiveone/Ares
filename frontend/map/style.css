@@ -31,6 +31,10 @@ body {
   padding: 10px;
 }
 
+#grid.drawing {
+  cursor: crosshair;
+}
+
 .cell {
   width: var(--cell-size);
   height: var(--cell-size);
