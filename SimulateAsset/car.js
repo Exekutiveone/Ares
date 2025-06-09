@@ -113,10 +113,12 @@ export class Car {
     this.ctx.restore();
 
     for (const o of this.objects) {
-      this.ctx.beginPath();
-      this.ctx.arc(o.x, o.y, o.radius, 0, 2 * Math.PI);
-      this.ctx.fillStyle = '#888';
-      this.ctx.fill();
+      if (typeof o.draw === 'function') {
+        o.draw(this.ctx);
+      } else {
+        this.ctx.fillStyle = '#888';
+        this.ctx.fillRect(o.x, o.y, o.size ?? o.radius * 2, o.size ?? o.radius * 2);
+      }
     }
 
     this.drawKegel(18, 40, 700, Math.PI, 'red', 6);

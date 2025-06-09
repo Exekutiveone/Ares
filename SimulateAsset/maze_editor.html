@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maze Editor</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; height:100%; background:#111; color:white; }
+  canvas { background:#eee; display:block; margin:0 auto; }
+  button { margin:5px; }
+</style>
+</head>
+<body>
+  <img id="bgImage" src="extracted_foreground.png" style="display:none">
+  <canvas id="canvas" width="800" height="600"></canvas>
+  <div style="position:fixed;top:5px;left:50%;transform:translateX(-50%);z-index:10;">
+    <button id="modeObstacle">Place Obstacle</button>
+    <button id="modeTarget">Place Target</button>
+    <button id="modeErase">Erase</button>
+    <button id="generateMaze">Auto Maze</button>
+    <button id="startSim">Start</button>
+  </div>
+  <script type="module" src="maze_editor.js"></script>
+</body>
+</html>
