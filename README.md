@@ -18,3 +18,7 @@ These classes form a starting point for building a more complete simulation in J
 The `frontend` folder contains a small HTML/JS interface that visualizes the `GridMap` structure. The UI lets you mark obstacles, targets and walkable cells, place assets and assign simple tasks. A toggle is provided to switch between the full map and a POV style view around a selected asset.
 
 Open `frontend/index.html` in a browser to try it out. No backend connectivity is required.
+
+## Backend
+
+The `Backend` folder documents how to set up a PostgreSQL server and how the Java client connects to it. See `Backend/config_server.md` for the step-by-step instructions used in the home lab.
