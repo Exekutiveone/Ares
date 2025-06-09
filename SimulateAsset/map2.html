@@ -1,0 +1,49 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Map mit Obstacle und Auto</title>
+  <style>
+    html, body { margin:0; padding:0; overflow:hidden; height:100%; background:#111; display:flex; justify-content:center; align-items:center }
+    canvas { background:#fff }
+    #bgImage { visibility:hidden; position:absolute }
+  </style>
+</head>
+<body>
+  <img id="bgImage" src="extracted_foreground.png">
+  <canvas id="canvas" width="3000" height="2000"></canvas>
+  <script type="module">
+    import { GameMap }  from './map.js'
+    import { Obstacle } from './obstacle.js'
+    import { Car }      from './car.js'
+
+    const canvas = document.getElementById('canvas')
+    const ctx    = canvas.getContext('2d')
+    const bg     = document.getElementById('bgImage')
+
+    const gameMap = new GameMap(canvas.width, canvas.height, 100)
+    const obs     = new Obstacle(canvas.width/2, canvas.height/2, 60)
+    const car     = new Car(ctx, bg, 0.5, 100, [obs], { startX:200, startY:200 })
+
+    function loop() {
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      gameMap.drawBorder(ctx)
+      obs.draw(ctx)
+      car.update(canvas.width, canvas.height)
+      requestAnimationFrame(loop)
+    }
+
+    function init() {
+      console.log('Init draw')
+      gameMap.drawBorder(ctx)
+      obs.draw(ctx)
+      car.draw(canvas.width, canvas.height)
+      requestAnimationFrame(loop)
+    }
+
+    if (bg.complete) init()
+    else bg.addEventListener('load', init)
+  </script>
+</body>
+</html>
