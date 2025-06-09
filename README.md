@@ -1,4 +1,4 @@
-# ECODE Project
+# Project Ares
 
 This repository contains experiments for controlling Raspberry Pi hardware (camera, servos, sensors) and running simple simulations.
 
