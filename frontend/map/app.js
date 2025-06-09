@@ -90,6 +90,7 @@ function init() {
   document.getElementById('fetchMaps').addEventListener('click', fetchAvailableMaps);
   document.getElementById('renameMapBtn').addEventListener('click', renameMap);
   document.getElementById('deleteMapBtn').addEventListener('click', deleteMap);
+  document.getElementById('setSizeBtn').addEventListener('click', resizeMap);
   document.getElementById('assetSelect').addEventListener('change', e => {
     state.selectedAssetId = e.target.value;
   });
@@ -133,6 +134,22 @@ function setGridSize(width, height) {
   const root = document.documentElement;
   root.style.setProperty('--grid-width', width);
   root.style.setProperty('--grid-height', height);
+}
+
+function resizeMap() {
+  const w = parseInt(document.getElementById('gridWidth').value, 10);
+  const h = parseInt(document.getElementById('gridHeight').value, 10);
+  if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+    alert('Invalid size');
+    return;
+  }
+  state.map = new GridMap(w, h);
+  setGridSize(w, h);
+  state.activeAssetId = null;
+  state.path = [];
+  renderGrid();
+  updateAssetList();
+  updateTaskList();
 }
 
 function getAllCells() {
