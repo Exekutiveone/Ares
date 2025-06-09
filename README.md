@@ -51,3 +51,20 @@ CREATE TABLE maps (
 
 Send a `POST` request to `/api/maps` with JSON
 `{"name": "Map A", "map": {...}}` to save a map.
+
+## Flask Asset API
+
+`Backend/asset_api.py` provides CRUD endpoints for managing assets.
+Run the server with:
+
+```bash
+python Backend/asset_api.py
+```
+
+Available routes:
+
+- `POST /api/assets` – create an asset
+- `GET /api/assets` – list assets
+- `GET /api/assets/<id>` – fetch one asset
+- `PUT /api/assets/<id>` – update fields of an asset
+- `DELETE /api/assets/<id>` – remove an asset
