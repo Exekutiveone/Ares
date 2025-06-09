@@ -63,7 +63,9 @@ const state = {
   povMode: false,
   selectedAssetId: null,
   activeAssetId: null,
-  path: []
+  path: [],
+  isDrawing: false,
+  drawMode: null
 };
 
 function init() {
@@ -95,6 +97,12 @@ function init() {
     state.selectedAssetId = e.target.value;
   });
   window.addEventListener('keydown', onKeyDown);
+
+  const grid = document.getElementById('grid');
+  grid.addEventListener('mousedown', onDrawStart);
+  grid.addEventListener('mouseover', onDraw);
+  grid.addEventListener('mouseleave', onDrawEnd);
+  window.addEventListener('mouseup', onDrawEnd);
 }
 
 function onModeChange() {
@@ -205,6 +213,61 @@ function onCellClick(e) {
       state.map.setType(x, y, mode);
     }
   }
+  renderGrid();
+  updateAssetList();
+}
+
+function applyDraw(cellEl) {
+  const x = parseInt(cellEl.dataset.x, 10);
+  const y = parseInt(cellEl.dataset.y, 10);
+  if (state.drawMode === 'asset') {
+    const asset = state.assets.find(a => a.id === state.selectedAssetId);
+    if (asset) {
+      state.map.placeAsset(asset, x, y);
+    }
+  } else {
+    state.map.setType(x, y, state.drawMode);
+  }
+
+  const cell = state.map.cells[y][x];
+  cellEl.className = 'cell ' + cell.type;
+  if (cell.assetId) cellEl.classList.add('asset');
+  if (state.path.some(p => p.x === x && p.y === y)) {
+    cellEl.classList.add('path');
+  }
+  if (cell.assetId && cell.assetId === state.activeAssetId) {
+    cellEl.classList.add('selected');
+  }
+  if (cell.assetId) {
+    const asset = state.assets.find(a => a.id === cell.assetId);
+    cellEl.textContent = cell.assetId;
+    cellEl.title = `${asset.id}\nBattery: ${asset.battery}%` +
+      (asset.taskId ? `\nTask: ${asset.taskId}` : '');
+  } else {
+    cellEl.textContent = '';
+    cellEl.removeAttribute('title');
+  }
+}
+
+function onDrawStart(e) {
+  if (!e.target.dataset.x) return;
+  e.preventDefault();
+  state.isDrawing = true;
+  state.drawMode = document.getElementById('editMode').value;
+  document.getElementById('grid').classList.add('drawing');
+  applyDraw(e.target);
+}
+
+function onDraw(e) {
+  if (!state.isDrawing) return;
+  if (!e.target.dataset.x) return;
+  applyDraw(e.target);
+}
+
+function onDrawEnd() {
+  if (!state.isDrawing) return;
+  state.isDrawing = false;
+  document.getElementById('grid').classList.remove('drawing');
   renderGrid();
   updateAssetList();
 }
