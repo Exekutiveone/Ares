@@ -88,6 +88,8 @@ function init() {
   document.getElementById('loadMap').addEventListener('change', loadMap);
   document.getElementById('loadMapDb').addEventListener('click', loadMapFromDb);
   document.getElementById('fetchMaps').addEventListener('click', fetchAvailableMaps);
+  document.getElementById('renameMapBtn').addEventListener('click', renameMap);
+  document.getElementById('deleteMapBtn').addEventListener('click', deleteMap);
   document.getElementById('assetSelect').addEventListener('change', e => {
     state.selectedAssetId = e.target.value;
   });
@@ -307,11 +309,16 @@ function saveMap() {
   link.click();
 }
 
+function getDefaultMapName() {
+  const d = new Date();
+  return d.toISOString().replace(/[:.]/g, '-');
+}
+
 function uploadMap() {
-  const name = document.getElementById('mapName').value.trim();
+  let name = document.getElementById('mapName').value.trim();
   if (!name) {
-    alert('Enter map name');
-    return;
+    name = getDefaultMapName();
+    document.getElementById('mapName').value = name;
   }
   const data = getCurrentMapData();
   fetch('http://127.0.0.1:5000/api/maps', {
@@ -381,6 +388,50 @@ function loadMapFromDb() {
       updateTaskList();
       renderGrid();
     });
+}
+
+function renameMap() {
+  const mapId = document.getElementById('mapSelect').value;
+  const newName = document.getElementById('renameMapName').value.trim();
+  if (!mapId) {
+    alert('Keine Map ausgewählt');
+    return;
+  }
+  if (!newName) {
+    alert('Neuer Name fehlt');
+    return;
+  }
+  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: newName })
+  }).then(res => {
+    if (res.ok) {
+      fetchAvailableMaps();
+      alert('Umbenannt');
+    } else {
+      res.text().then(t => alert('Fehler beim Umbenennen:\n' + t));
+    }
+  });
+}
+
+function deleteMap() {
+  const mapId = document.getElementById('mapSelect').value;
+  if (!mapId) {
+    alert('Keine Map ausgewählt');
+    return;
+  }
+  if (!confirm('Map löschen?')) return;
+  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, {
+    method: 'DELETE'
+  }).then(res => {
+    if (res.ok) {
+      fetchAvailableMaps();
+      alert('Gelöscht');
+    } else {
+      res.text().then(t => alert('Fehler beim Löschen:\n' + t));
+    }
+  });
 }
 
 window.onload = () => {
