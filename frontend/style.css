@@ -1,0 +1,67 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
+#toolbar {
+  background: #333;
+  color: white;
+  padding: 10px;
+}
+
+#main {
+  display: flex;
+  flex-direction: row;
+}
+
+:root {
+  --grid-width: 20;
+  --grid-height: 20;
+  --cell-size: 30px;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-width), var(--cell-size));
+  grid-template-rows: repeat(var(--grid-height), var(--cell-size));
+  gap: 1px;
+  background: #888;
+  padding: 10px;
+}
+
+.cell {
+  width: var(--cell-size);
+  height: var(--cell-size);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cell.obstacle { background: #444; }
+.cell.target { background: #fffa65; }
+.cell.asset { background: #4CAF50; color: white; }
+.cell.path { background: #5bc0de; }
+.cell.selected { outline: 2px solid red; }
+
+#sidebar {
+  margin-left: 20px;
+  width: 200px;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar li {
+  margin-bottom: 5px;
+  padding: 4px;
+  background: #ddd;
+  border-radius: 4px;
+}
+
