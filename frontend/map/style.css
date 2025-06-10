@@ -47,7 +47,21 @@ body {
 }
 
 .cell.obstacle { background: #444; }
-.cell.target { background: #fffa65; }
+.cell.target {
+  background: #fff;
+  position: relative;
+}
+.target-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: green;
+}
 .cell.asset { background: #4CAF50; color: white; }
 .cell.path { background: #5bc0de; }
 .cell.selected { outline: 2px solid red; }

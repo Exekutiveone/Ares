@@ -118,6 +118,11 @@ function renderGrid() {
   for (const cell of view) {
     const div = document.createElement('div');
     div.className = 'cell ' + cell.type;
+    div.innerHTML = '';
+    if (cell.type === 'target') {
+      const tgt = new Target(cell.x, cell.y);
+      tgt.attach(div);
+    }
     if (cell.assetId) div.classList.add('asset');
     if (state.path.some(p => p.x === cell.x && p.y === cell.y)) {
       div.classList.add('path');
@@ -130,7 +135,9 @@ function renderGrid() {
     div.addEventListener('click', onCellClick);
     if (cell.assetId) {
       const asset = state.assets.find(a => a.id === cell.assetId);
-      div.textContent = cell.assetId;
+      const span = document.createElement('span');
+      span.textContent = cell.assetId;
+      div.appendChild(span);
       div.title = `${asset.id}\nBattery: ${asset.battery}%` +
         (asset.taskId ? `\nTask: ${asset.taskId}` : '');
     }
@@ -231,6 +238,11 @@ function applyDraw(cellEl) {
 
   const cell = state.map.cells[y][x];
   cellEl.className = 'cell ' + cell.type;
+  cellEl.innerHTML = '';
+  if (cell.type === 'target') {
+    const tgt = new Target(x, y);
+    tgt.attach(cellEl);
+  }
   if (cell.assetId) cellEl.classList.add('asset');
   if (state.path.some(p => p.x === x && p.y === y)) {
     cellEl.classList.add('path');
@@ -240,11 +252,15 @@ function applyDraw(cellEl) {
   }
   if (cell.assetId) {
     const asset = state.assets.find(a => a.id === cell.assetId);
-    cellEl.textContent = cell.assetId;
+    const span = document.createElement('span');
+    span.textContent = cell.assetId;
+    cellEl.appendChild(span);
     cellEl.title = `${asset.id}\nBattery: ${asset.battery}%` +
       (asset.taskId ? `\nTask: ${asset.taskId}` : '');
   } else {
-    cellEl.textContent = '';
+    if (cell.type !== 'target') {
+      cellEl.textContent = '';
+    }
     cellEl.removeAttribute('title');
   }
 }
