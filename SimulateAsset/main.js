@@ -31,9 +31,31 @@ let dragY = 0;
 let targetMarker = gameMap.target;
 
 function refreshCarObjects() {
-  const list = obstacles.slice();
-  if (targetMarker) list.push(targetMarker);
-  car.objects = list;
+  // Only obstacles should block the car. The target is handled
+  // separately so the car can pass through it.
+  car.objects = obstacles.slice();
+}
+
+function canPlaceTarget(x, y, size) {
+  if (!gameMap.isWithinBounds(x, y, size, size)) return false;
+  if (obstacles.some(o => o.intersectsRect(x, y, size, size))) return false;
+  const temp = new Target(x, y, size);
+  return !temp.intersectsRect(car.posX, car.posY, car.imgWidth, car.imgHeight);
+}
+
+function respawnTarget() {
+  const size = targetMarker ? targetMarker.size : CELL_SIZE;
+  for (let i = 0; i < 100; i++) {
+    const col = Math.floor(Math.random() * gameMap.cols);
+    const row = Math.floor(Math.random() * gameMap.rows);
+    const x = col * CELL_SIZE;
+    const y = row * CELL_SIZE;
+    if (canPlaceTarget(x, y, size)) {
+      targetMarker = new Target(x, y, size);
+      gameMap.target = targetMarker;
+      break;
+    }
+  }
 }
 
 const carImage = new Image();
@@ -70,7 +92,7 @@ canvas.addEventListener('mouseup', () => {
     if (targetMarker &&
         dragX === targetMarker.x &&
         dragY === targetMarker.y &&
-        previewSize === targetMarker.radius) {
+        previewSize === targetMarker.size) {
       targetMarker = null;
       gameMap.target = null;
     }
@@ -79,8 +101,10 @@ canvas.addEventListener('mouseup', () => {
     if (i !== -1) obstacles.splice(i, 1);
 
   } else if (selected === 'target') {
-    targetMarker = new Target(dragX, dragY, previewSize);
-    gameMap.target = targetMarker;
+    if (canPlaceTarget(dragX, dragY, previewSize)) {
+      targetMarker = new Target(dragX, dragY, previewSize);
+      gameMap.target = targetMarker;
+    }
   } else {
     obstacles.push(new Obstacle(dragX, dragY, previewSize));
   }
@@ -127,6 +151,10 @@ function loop() {
     ctx.strokeRect(dragX, dragY, previewSize, previewSize);
   }
   car.update(canvas.width, canvas.height);
+  if (targetMarker &&
+      targetMarker.intersectsRect(car.posX, car.posY, car.imgWidth, car.imgHeight)) {
+    respawnTarget();
+  }
 
   redEl.textContent = Math.round(car.redConeLength);
   greenEl.textContent = Math.round(car.greenConeLength);
