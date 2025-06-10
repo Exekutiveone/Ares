@@ -7,7 +7,7 @@ export class GameMap {
     this.cellSize = cellSize
     this.margin = margin
     this.obstacles = []
-    this.task = null
+    this.target = null
   }
 
   get width() { return this.cols * this.cellSize }
@@ -54,7 +54,7 @@ export class GameMap {
       cellSize: this.cellSize,
       margin: this.margin,
       obstacles: this.obstacles.map(o => ({ x: o.x, y: o.y, size: o.size })),
-      task: this.task
+      target: this.target
     }
   }
 
@@ -63,7 +63,7 @@ export class GameMap {
     if (obj.obstacles) {
       gm.obstacles = obj.obstacles.map(o => new Obstacle(o.x, o.y, o.size))
     }
-    gm.task = obj.task || null
+    gm.target = obj.target || null
     return gm
   }
 }
