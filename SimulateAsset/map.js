@@ -1,4 +1,4 @@
-import { Obstacle } from './obstacle.js'
+import { Obstacle } from './Obstacle.js'
 import { Target } from './Target.js'
 
 export class GameMap {
