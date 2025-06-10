@@ -5,7 +5,7 @@ export function getCurrentMapData(gameMap) {
     cellSize: gameMap.cellSize,
     obstacles: gameMap.obstacles.map(o => ({ x: o.x, y: o.y, size: o.size })),
     target: gameMap.target
-      ? { x: gameMap.target.x, y: gameMap.target.y, radius: gameMap.target.radius }
+      ? { x: gameMap.target.x, y: gameMap.target.y, size: gameMap.target.radius }
       : null
   };
 }
