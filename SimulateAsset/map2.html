@@ -65,6 +65,7 @@
       <input type="checkbox" id="removeMode">
     </div>
     <button id="generateMaze">Labyrinth generieren</button>
+    <button id="randomTarget">Zufalls-Target</button>
     <div class="cone-display">Rot: <span id="redLength">0</span> px</div>
     <div class="cone-display">Grün: <span id="greenLength">0</span> px</div>
     <div class="cone-display">Blau Links 1: <span id="blueLeft1">0</span> px</div>
@@ -95,6 +96,7 @@
     import { Car } from './car.js'
     import { Obstacle } from './obstacle.js'
     import { GameMap } from './map.js'
+    import { Target } from './target.js'
     import { aStar } from './pathfinder.js'
 
     const canvas = document.getElementById('canvas')
@@ -117,7 +119,7 @@
     let isDragging = false
     let dragX = 0
     let dragY = 0
-    let taskMarker = gameMap.task
+    let taskMarker = gameMap.task ? new Target(gameMap.task.x, gameMap.task.y, gameMap.task.radius) : null
     let path = []
 
     const carImage = new Image()
@@ -159,7 +161,7 @@
         if (i !== -1) obstacles.splice(i, 1)
 
       } else if (selected === 'task') {
-        taskMarker = { x: dragX + CELL_SIZE/2, y: dragY + CELL_SIZE/2, radius: Math.floor(CELL_SIZE/3) }
+        taskMarker = new Target(dragX + CELL_SIZE/2, dragY + CELL_SIZE/2, Math.floor(CELL_SIZE/3))
         gameMap.task = taskMarker
         computePath()
       } else {
@@ -226,7 +228,7 @@
           px + CELL_SIZE/2 >= o.x && px + CELL_SIZE/2 <= o.x + o.size &&
           py + CELL_SIZE/2 >= o.y && py + CELL_SIZE/2 <= o.y + o.size)
       } while (coll)
-      taskMarker = { x: px + CELL_SIZE/2, y: py + CELL_SIZE/2, radius: Math.floor(CELL_SIZE/3) }
+      taskMarker = new Target(px + CELL_SIZE/2, py + CELL_SIZE/2, Math.floor(CELL_SIZE/3))
       gameMap.task = taskMarker
     }
 
@@ -249,6 +251,7 @@
     }
 
     generateMazeBtn.addEventListener('click', generateMaze)
+    document.getElementById('randomTarget').addEventListener('click', () => { placeRandomTarget(); computePath() })
 
     document.getElementById('saveMap').addEventListener('click', saveMap)
     document.getElementById('saveMapDb').addEventListener('click', uploadMap)
@@ -271,10 +274,7 @@
       drawGrid()
       for (const o of obstacles) o.draw(ctx)
       if (taskMarker) {
-        ctx.fillStyle='green';
-        ctx.beginPath();
-        ctx.arc(taskMarker.x, taskMarker.y, taskMarker.radius,0,Math.PI*2);
-        ctx.fill()
+        taskMarker.draw(ctx)
       }
       computePath()
       if (path.length > 1) {
@@ -290,9 +290,7 @@
       }
       car.update(canvas.width, canvas.height)
 
-      if (taskMarker &&
-          taskMarker.x >= car.posX && taskMarker.x <= car.posX + car.imgWidth &&
-          taskMarker.y >= car.posY && taskMarker.y <= car.posY + car.imgHeight) {
+      if (taskMarker && taskMarker.intersectsRect(car.posX, car.posY, car.imgWidth, car.imgHeight)) {
         placeRandomTarget()
         computePath()
       }
@@ -319,7 +317,7 @@
         rows: gameMap.rows,
         cellSize: gameMap.cellSize,
         obstacles: obstacles.map(o => ({x:o.x, y:o.y, size:o.size})),
-        task: taskMarker
+        task: taskMarker ? {x: taskMarker.x, y: taskMarker.y, radius: taskMarker.radius} : null
       }
     }
 
@@ -365,7 +363,7 @@
         gameMap = GameMap.fromJSON(obj)
         CELL_SIZE = gameMap.cellSize
         obstacles = gameMap.obstacles
-        taskMarker = gameMap.task
+        taskMarker = gameMap.task ? new Target(gameMap.task.x, gameMap.task.y, gameMap.task.radius) : null
         car.objects = obstacles
         document.getElementById('gridWidth').value = gameMap.cols
         document.getElementById('gridHeight').value = gameMap.rows
@@ -399,7 +397,7 @@
           gameMap = GameMap.fromJSON(obj)
           CELL_SIZE = gameMap.cellSize
           obstacles = gameMap.obstacles
-          taskMarker = gameMap.task
+          taskMarker = gameMap.task ? new Target(gameMap.task.x, gameMap.task.y, gameMap.task.radius) : null
           car.objects = obstacles
           document.getElementById('gridWidth').value = gameMap.cols
           document.getElementById('gridHeight').value = gameMap.rows
