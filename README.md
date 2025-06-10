@@ -113,3 +113,26 @@ values, e.g.:
 The JavaScript simulation posts its calculated data to `/api/car` so that
 `Transmitter/car_dashboard.html` can show the live telemetry values.
 
+
+## Car Control API
+
+A separate Flask service is provided in `Backend/control_api.py` for sending
+movement commands to the vehicle. Start it with:
+
+```bash
+python Backend/control_api.py
+```
+
+It runs on port `5002` and accepts POST requests to `/api/control` with an
+`action` field:
+
+```bash
+curl -X POST http://localhost:5002/api/control \
+     -H "Content-Type: application/json" \
+     -d '{"action": "forward"}'
+```
+
+Valid actions are `forward`, `backward`, `left`, `right` and `stop` (the values
+`up` and `down` are accepted as synonyms for `forward` and `backward`). The
+implementation simply records the last action; integration with actual hardware
+can be added where indicated in the code.

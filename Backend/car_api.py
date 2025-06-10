@@ -18,6 +18,22 @@ class Car:
             'right': 0
         }
 
+    def control(self, action):
+        """Very small state change based on a simple action."""
+        if action == 'up':
+            self.speed = min(self.speed + 1, 30)
+            self.rpm = int(self.speed * 100)
+        elif action == 'down':
+            self.speed = max(self.speed - 1, 0)
+            self.rpm = int(self.speed * 100)
+        elif action == 'left':
+            self.gyro = (self.gyro - 5) % 360
+        elif action == 'right':
+            self.gyro = (self.gyro + 5) % 360
+        elif action == 'stop':
+            self.speed = 0
+            self.rpm = 0
+
     def update_random(self):
         """Fill the fields with some random demo values."""
         self.speed = round(random.uniform(0, 30), 2)
@@ -60,6 +76,16 @@ def set_car_data():
         car.update_from_dict(data)
     except (TypeError, ValueError):
         return jsonify({'error': 'invalid payload'}), 400
+    return jsonify({'status': 'ok'})
+
+
+@app.route('/api/control', methods=['POST'])
+def control_car():
+    data = request.get_json() or {}
+    action = data.get('action')
+    if action not in ['up', 'down', 'left', 'right', 'stop']:
+        return jsonify({'error': 'invalid action'}), 400
+    car.control(action)
     return jsonify({'status': 'ok'})
 
 @app.route('/api/video', methods=['GET'])
