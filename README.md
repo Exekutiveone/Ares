@@ -71,14 +71,19 @@ Available routes:
 
 ## Flask Car Data API
 
-`Backend/car_api.py` exposes simulated car telemetry and streams a demo video.
+`SimulateAsset/car_api.py` exposes simulated car telemetry and streams a demo video.
 Start the server with:
 
 ```bash
-python Backend/car_api.py
+python SimulateAsset/car_api.py
 ```
 
 The API provides two endpoints:
 
 - `GET /api/car` – return current speed, RPM, gyroscope value and dummy distance sensor values.
-- `GET /api/video` – stream the file `dummy-video.mp4` located next to the script. You need to supply this file yourself as it is not included in the repository.
+- `GET /api/video` – stream the file `dummy-video.mp4` located in `SimulateAsset`. You need to supply this file yourself as it is not included in the repository.
+
+## Transmitter Demo Page
+
+A small HTML file `Transmitter/car_dashboard.html` shows how to read the API and display the demo video.
+Open the file in a browser after starting the Flask server to see live values and the stream.
