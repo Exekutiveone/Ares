@@ -22,7 +22,11 @@
     <script>
         async function fetchData() {
             try {
-                const res = await fetch('http://localhost:5001/api/car');
+                const res = await fetch('http://localhost:5001/api/car', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}) // leeres Objekt, um POST auszulösen
+                });
                 if (!res.ok) return;
                 const data = await res.json();
                 document.getElementById('speed').textContent = data.speed;
