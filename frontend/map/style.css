@@ -47,7 +47,10 @@ body {
 }
 
 .cell.obstacle { background: #444; }
-.cell.target { background: #fffa65; }
+.cell.target {
+  background: #2ecc40;
+  border-radius: 50%;
+}
 .cell.asset { background: #4CAF50; color: white; }
 .cell.path { background: #5bc0de; }
 .cell.selected { outline: 2px solid red; }
