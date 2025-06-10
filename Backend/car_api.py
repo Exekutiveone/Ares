@@ -72,4 +72,5 @@ def get_video():
     return send_from_directory(directory, 'dummy-video.mp4', mimetype='video/mp4')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    # Bind to a dedicated IP instead of localhost
+    app.run(host='192.168.56.103', port=5001, debug=True)

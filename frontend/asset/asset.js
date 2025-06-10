@@ -9,7 +9,7 @@ function createAsset() {
     return;
   }
 
-  fetch('http://127.0.0.1:5000/api/assets', {
+  fetch('http://192.168.56.101:5000/api/assets', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, type, status, battery })
@@ -25,7 +25,7 @@ function createAsset() {
 }
 
 function loadAssets() {
-  fetch('http://127.0.0.1:5000/api/assets')
+  fetch('http://192.168.56.101:5000/api/assets')
     .then(res => res.json())
     .then(data => {
       const list = document.getElementById('assetList');
@@ -55,7 +55,7 @@ window.onload = loadAssets;
 
 function deleteAsset(id) {
   if (!confirm('Asset wirklich löschen?')) return;
-  fetch(`http://127.0.0.1:5000/api/assets/${id}`, { method: 'DELETE' })
+  fetch(`http://192.168.56.101:5000/api/assets/${id}`, { method: 'DELETE' })
     .then(res => {
       if (!res.ok) throw new Error('Fehler beim Löschen');
       return res.json();
@@ -73,7 +73,7 @@ function editAsset(asset) {
   if (status === null) return;
   const battery = prompt('Batterie', asset.battery);
   if (battery === null) return;
-  fetch(`http://127.0.0.1:5000/api/assets/${asset.id}`, {
+  fetch(`http://192.168.56.101:5000/api/assets/${asset.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, type, status, battery: parseFloat(battery) })

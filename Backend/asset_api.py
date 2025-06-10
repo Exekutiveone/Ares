@@ -105,4 +105,5 @@ def update_asset(asset_id):
         conn.close()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Bind to a dedicated IP instead of localhost
+    app.run(host='192.168.56.101', port=5000, debug=True)

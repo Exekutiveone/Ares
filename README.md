@@ -79,6 +79,14 @@ server just like the other Flask examples:
 ```bash
 pip install -r Backend/requirements.txt
 python Backend/car_api.py
+
+The Flask services now listen on dedicated IP addresses rather than
+`localhost`. Configure your network so the following addresses are available
+before starting the servers:
+
+- Asset API: `http://192.168.56.101:5000`
+- Map API:   `http://192.168.56.102:5000`
+- Car API:   `http://192.168.56.103:5001`
 ```
 
 The service listens on port `5001` and provides these endpoints:
@@ -112,4 +120,7 @@ values, e.g.:
 
 The JavaScript simulation posts its calculated data to `/api/car` so that
 `Transmitter/car_dashboard.html` can show the live telemetry values.
+Run `Backend/car_api.py` to provide this API. The script in
+`SimulateAsset/car_api.py` only returns random demo data and should not be
+used when running the full simulation.
 

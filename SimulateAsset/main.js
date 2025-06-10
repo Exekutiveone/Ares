@@ -25,7 +25,7 @@ const TELEMETRY_INTERVAL = 500; // ms
 let lastTelemetry = 0;
 
 function sendTelemetry(front, rear, left, right) {
-  fetch('http://127.0.0.1:5001/api/car', {
+  fetch('http://192.168.56.103:5001/api/car', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -417,7 +417,7 @@ function uploadMap() {
     document.getElementById('mapName').value = name;
   }
   const data = getCurrentMapData();
-  fetch('http://127.0.0.1:5000/api/maps', {
+  fetch('http://192.168.56.102:5000/api/maps', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: name, map: data })
@@ -450,7 +450,7 @@ function loadMap(e) {
 }
 
 function fetchAvailableMaps() {
-  fetch('http://127.0.0.1:5000/api/maps')
+  fetch('http://192.168.56.102:5000/api/maps')
     .then(res => res.json())
     .then(data => {
       const select = document.getElementById('mapSelect');
@@ -470,7 +470,7 @@ function loadMapFromDb() {
     alert('Keine Map ausgewählt');
     return;
   }
-  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`)
+  fetch(`http://192.168.56.102:5000/api/maps/${mapId}`)
     .then(res => res.json())
     .then(obj => {
       state.map = new GridMap(obj.width, obj.height);
@@ -497,7 +497,7 @@ function renameMap() {
     alert('Neuer Name fehlt');
     return;
   }
-  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, {
+  fetch(`http://192.168.56.102:5000/api/maps/${mapId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: newName })
@@ -518,7 +518,7 @@ function deleteMap() {
     return;
   }
   if (!confirm('Map löschen?')) return;
-  fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, {
+  fetch(`http://192.168.56.102:5000/api/maps/${mapId}`, {
     method: 'DELETE'
   }).then(res => {
     if (res.ok) {
