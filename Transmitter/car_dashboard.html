@@ -7,6 +7,25 @@
         body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
         #data { margin-bottom: 20px; }
         video { max-width: 100%; height: auto; }
+        #controls {
+            display: inline-grid;
+            grid-template-areas:
+                '. up .'
+                'left stop right'
+                '. down .';
+            gap: 5px;
+            margin-top: 20px;
+        }
+        #controls button {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        #up { grid-area: up; }
+        #down { grid-area: down; }
+        #left { grid-area: left; }
+        #right { grid-area: right; }
+        #stop { grid-area: stop; }
     </style>
 </head>
 <body>
@@ -18,15 +37,18 @@
         <p>Distances: <span id="distances">-</span></p>
     </div>
     <video id="video" controls src="http://localhost:5001/api/video"></video>
+    <div id="controls">
+        <button id="up">&#8593;</button>
+        <button id="left">&#8592;</button>
+        <button id="stop">&#9632;</button>
+        <button id="right">&#8594;</button>
+        <button id="down">&#8595;</button>
+    </div>
 
     <script>
         async function fetchData() {
             try {
-                const res = await fetch('http://localhost:5001/api/car', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({}) // leeres Objekt, um POST auszulösen
-                });
+                const res = await fetch('http://localhost:5001/api/car');
                 if (!res.ok) return;
                 const data = await res.json();
                 document.getElementById('speed').textContent = data.speed;
@@ -39,6 +61,24 @@
         }
         setInterval(fetchData, 1000);
         fetchData();
+
+        async function sendCommand(action) {
+            try {
+                await fetch('http://localhost:5001/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('up').addEventListener('click', () => sendCommand('up'));
+        document.getElementById('down').addEventListener('click', () => sendCommand('down'));
+        document.getElementById('left').addEventListener('click', () => sendCommand('left'));
+        document.getElementById('right').addEventListener('click', () => sendCommand('right'));
+        document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
     </script>
 </body>
 </html>
