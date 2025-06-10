@@ -72,3 +72,44 @@ Available routes:
 ## Flask Car Data API
 
 
+`Backend/car_api.py` exposes a very small Flask service that returns car
+telemetry values and serves a demo video. Install the requirements and start the
+server just like the other Flask examples:
+
+```bash
+pip install -r Backend/requirements.txt
+python Backend/car_api.py
+```
+
+The service listens on port `5001` and provides these endpoints:
+
+- `GET /api/car` – return the current telemetry values
+- `POST /api/car` – update the telemetry state with a JSON payload
+- `GET /api/video` – stream `dummy-video.mp4` if it is present
+
+Example data sent to `POST /api/car`:
+
+```json
+{
+  "speed": 12.5,
+  "rpm": 1250,
+  "gyro": 90.0,
+  "distances": {"front": 100, "rear": 110, "left": 95, "right": 120}
+}
+```
+
+When requesting `GET /api/car` you receive the same structure with the latest
+values, e.g.:
+
+```json
+{
+  "speed": 27.4,
+  "rpm": 2740,
+  "gyro": 123.4,
+  "distances": {"front": 83, "rear": 65, "left": 30, "right": 74}
+}
+```
+
+The JavaScript simulation posts its calculated data to `/api/car` so that
+`Transmitter/car_dashboard.html` can show the live telemetry values.
+
