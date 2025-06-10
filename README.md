@@ -15,9 +15,12 @@ These classes form a starting point for building a more complete simulation in J
 
 ## Frontend Prototype
 
-The `frontend` folder contains a small HTML/JS interface that visualizes the `GridMap` structure. The UI lets you mark obstacles, targets and walkable cells, place assets and assign simple tasks. A toggle is provided to switch between the full map and a POV style view around a selected asset.
+The `frontend` folder contains a small HTML/JS interface that visualizes the
+`GridMap` structure. The UI lets you mark obstacles, targets and walkable cells,
+place assets and assign simple tasks. Choose **Target** from the mode dropdown
+and click on the map to drop green markers.
 
-Open `frontend/index.html` in a browser to try it out. No backend connectivity is required.
+Open `frontend/map/index.html` in a browser to try it out. No backend connectivity is required.
 
 ## Backend
 

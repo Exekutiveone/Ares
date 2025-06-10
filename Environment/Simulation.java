@@ -10,10 +10,12 @@ public class Simulation {
         map.addAsset(robot, new Coord(2, 2));
 
         map.addObstacle(new Coord(5, 5));
-        map.addTarget(new Coord(7, 7));
+        Coord target = map.placeRandomTarget();
 
         Task task = new Task("T1", 1);
-        task.coordinates.addAll(Arrays.asList(new Coord(7, 7)));
+        if (target != null) {
+            task.coordinates.addAll(Arrays.asList(target));
+        }
         robot.task = task;
         task.assignedAssets.add(robot);
 
