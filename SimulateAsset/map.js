@@ -1,4 +1,5 @@
 import { Obstacle } from './obstacle.js'
+import { Target } from './target.js'
 
 export class GameMap {
   constructor(cols, rows, cellSize = 40, margin = 0) {
@@ -55,6 +56,8 @@ export class GameMap {
       margin: this.margin,
       obstacles: this.obstacles.map(o => ({ x: o.x, y: o.y, size: o.size })),
       task: this.task
+        ? { x: this.task.x, y: this.task.y, radius: this.task.radius }
+        : null
     }
   }
 
@@ -63,7 +66,11 @@ export class GameMap {
     if (obj.obstacles) {
       gm.obstacles = obj.obstacles.map(o => new Obstacle(o.x, o.y, o.size))
     }
-    gm.task = obj.task || null
+    if (obj.task) {
+      gm.task = new Target(obj.task.x, obj.task.y, obj.task.radius)
+    } else {
+      gm.task = null
+    }
     return gm
   }
 }
