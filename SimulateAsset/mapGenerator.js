@@ -33,7 +33,11 @@ export function generateMaze(gameMap, respawnTarget) {
   let y = 1;
   while (y < rows - 1) {
     const h = Math.floor(Math.random() * (maxPassage - minPassage + 1)) + minPassage;
+    // Ensure at least one three-cell wide opening in this row
+    const rowGapStart = 3 + Math.floor(Math.random() * (cols - 6));
+    const rowGapEnd = rowGapStart + 2;
     for (let x = 3; x < cols - 3;) {
+      if (x >= rowGapStart && x <= rowGapEnd) { x++; continue; }
       if (Math.random() < 0.3) {
         const ox = x * cellSize;
         const oy = y * cellSize;
@@ -42,7 +46,7 @@ export function generateMaze(gameMap, respawnTarget) {
           else { x++; continue; }
         }
         obstacles.push(new Obstacle(ox, oy, cellSize));
-        x += 3; // leave at least two cells free after each obstacle
+        x += 3; // maintain a walkable gap after each obstacle
       } else {
         x++;
       }
