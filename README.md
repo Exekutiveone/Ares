@@ -118,11 +118,11 @@ movement commands.
 
 ## Car Control API
 
-A separate Flask service is provided in `SimulateAsset/control_api.py` for sending
+A separate Flask service is provided in `Transmitter/control_api.py` for sending
 movement commands to the vehicle. Start it with:
 
 ```bash
-python SimulateAsset/control_api.py
+python Transmitter/control_api.py
 ```
 
 It runs on port `5002` and accepts POST requests to `/api/control` with an
@@ -140,10 +140,10 @@ implementation simply records the last action; integration with actual hardware
 can be added where indicated in the code.
 
 For the JavaScript simulation the same API is provided in
-`SimulateAsset/control_api.py`. Start it with:
+`Transmitter/control_api.py`. Start it with:
 
 ```bash
-python SimulateAsset/control_api.py
+python Transmitter/control_api.py
 ```
 
 This service listens on port `5002` as well.
@@ -168,8 +168,22 @@ this endpoint periodically (every 200&nbsp;ms) to obtain the last command and
 maps it to the arrow keys of the virtual car. When both pages are open you can
 steer the vehicle in Map&nbsp;2 with the control unit.
 
+### Autopilot
+
+1. Start the control API if it is not already running:
+
+   ```bash
+   python Transmitter/control_api.py
+   ```
+
+2. Open `SimulateAsset/map2.html` in a browser.
+3. Place obstacles and a target, then click **Optimal Pathfinder**.
+4. The script calculates a path and automatically issues movement commands
+   through the control API. Manual keyboard input is ignored until the route is
+   finished.
+
 ### API Ports
 
 - `Backend/map_api.py` – 5000
 - `SimulateAsset/car_api.py` – 5001
-- `SimulateAsset/control_api.py` – 5002
+- `Transmitter/control_api.py` – 5002
