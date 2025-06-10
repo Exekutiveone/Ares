@@ -4,40 +4,23 @@
     <meta charset="UTF-8">
     <title>Car Control Unit</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
-        #controls {
-            display: inline-grid;
-            grid-template-areas:
-                '. up .'
-                'left stop right'
-                '. down .';
-            gap: 5px;
-            margin-top: 20px;
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #eee;
+            padding: 20px;
         }
-        #controls button {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-        }
-        #up { grid-area: up; }
-        #down { grid-area: down; }
-        #left { grid-area: left; }
-        #right { grid-area: right; }
-        #stop { grid-area: stop; }
     </style>
 </head>
 <body>
-    <h1>Control Unit</h1>
-    <div id="controls">
-        <button id="up">&#8593;</button>
-        <button id="left">&#8592;</button>
-        <button id="stop">&#9632;</button>
-        <button id="right">&#8594;</button>
-        <button id="down">&#8595;</button>
-    </div>
+    <h1>Control Unit (Use Arrow Keys)</h1>
 
     <script>
-        async function sendCommand(action) {
+        let currentAction = null;
+
+        const sendCommand = async (action) => {
+            if (action === currentAction) return;
+            currentAction = action;
             try {
                 await fetch('http://localhost:5002/api/control', {
                     method: 'POST',
@@ -47,13 +30,41 @@
             } catch (e) {
                 console.error(e);
             }
-        }
+        };
 
-        document.getElementById('up').addEventListener('click', () => sendCommand('up'));
-        document.getElementById('down').addEventListener('click', () => sendCommand('down'));
-        document.getElementById('left').addEventListener('click', () => sendCommand('left'));
-        document.getElementById('right').addEventListener('click', () => sendCommand('right'));
-        document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
+        const stopCommand = async () => {
+            if (currentAction === 'stop') return;
+            currentAction = 'stop';
+            try {
+                await fetch('http://localhost:5002/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'stop' })
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp': sendCommand('down'); break;
+                case 'ArrowDown': sendCommand('up'); break;
+                case 'ArrowLeft': sendCommand('left'); break;
+                case 'ArrowRight': sendCommand('right'); break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'ArrowDown':
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    stopCommand();
+                    break;
+            }
+        });
     </script>
 </body>
 </html>
