@@ -1,4 +1,5 @@
 import { Obstacle } from './obstacle.js'
+import { Target } from './target.js'
 
 export class GameMap {
   constructor(cols, rows, cellSize = 40, margin = 0) {
@@ -54,7 +55,7 @@ export class GameMap {
       cellSize: this.cellSize,
       margin: this.margin,
       obstacles: this.obstacles.map(o => ({ x: o.x, y: o.y, size: o.size })),
-      task: this.task
+      task: this.task ? this.task.toJSON() : null
     }
   }
 
@@ -63,7 +64,7 @@ export class GameMap {
     if (obj.obstacles) {
       gm.obstacles = obj.obstacles.map(o => new Obstacle(o.x, o.y, o.size))
     }
-    gm.task = obj.task || null
+    gm.task = Target.fromJSON(obj.task)
     return gm
   }
 }
