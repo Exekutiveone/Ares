@@ -185,7 +185,7 @@ function loadMapFile(e) {
   });
 }
 
-generateMazeBtn.addEventListener('click', () => generateMaze(gameMap));
+generateMazeBtn.addEventListener('click', () => generateMaze(gameMap, respawnTarget));
 
 document.getElementById('saveMap').addEventListener('click', () => db.downloadMap(gameMap));
 
@@ -262,7 +262,7 @@ document.getElementById('setSizeBtn').addEventListener('click', () => {
   targetMarker = null;
   refreshCarObjects();
   resizeCanvas();
-  generateBorder(gameMap);
+  generateBorder(gameMap, respawnTarget);
 });
 
 carImage.onload = () => { resizeCanvas(); document.getElementById('fetchMaps').click(); loop(); };
