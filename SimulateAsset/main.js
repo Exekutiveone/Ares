@@ -8,6 +8,7 @@ import * as db from './db.js';
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const dropdown = document.getElementById('obstacleSize');
+const targetDropdown = document.getElementById('targetMode');
 const removeCheckbox = document.getElementById('removeMode');
 const generateMazeBtn = document.getElementById('generateMaze');
 const redEl = document.getElementById('redLength');
@@ -52,7 +53,6 @@ canvas.addEventListener('mousedown', e => {
 
 canvas.addEventListener('mouseup', () => {
   if (!isDragging) return;
-  const selected = dropdown.value;
 
   if (removeCheckbox.checked) {
     if (targetMarker &&
@@ -65,7 +65,7 @@ canvas.addEventListener('mouseup', () => {
     const i = obstacles.findIndex(o => o.x === dragX && o.y === dragY);
     if (i !== -1) obstacles.splice(i, 1);
 
-  } else if (selected === 'target') {
+  } else if (targetDropdown.value === 'target') {
     targetMarker = new Target(
       dragX + CELL_SIZE / 2,
       dragY + CELL_SIZE / 2,
@@ -109,7 +109,7 @@ function loop() {
   if (targetMarker) {
     targetMarker.draw(ctx);
   }
-  if (isDragging && dropdown.value!=='target' && !removeCheckbox.checked) {
+  if (isDragging && targetDropdown.value!=='target' && !removeCheckbox.checked) {
     ctx.strokeStyle='red';
     ctx.lineWidth=2;
     ctx.strokeRect(dragX, dragY, previewSize, previewSize);
