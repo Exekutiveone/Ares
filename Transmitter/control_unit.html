@@ -37,23 +37,48 @@
     </div>
 
     <script>
-        async function sendCommand(action) {
+        const keys = {up: false, down: false, left: false, right: false};
+
+        async function sendKeys() {
             try {
                 await fetch('http://localhost:5002/api/control', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({keys})
                 });
             } catch (e) {
                 console.error(e);
             }
         }
 
-        document.getElementById('up').addEventListener('click', () => sendCommand('up'));
-        document.getElementById('down').addEventListener('click', () => sendCommand('down'));
-        document.getElementById('left').addEventListener('click', () => sendCommand('left'));
-        document.getElementById('right').addEventListener('click', () => sendCommand('right'));
-        document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
+        function setKey(k, val) {
+            if (keys[k] === val) return;
+            keys[k] = val;
+            sendKeys();
+        }
+
+        const btnMap = {up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight'};
+        const keyToName = {ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right'};
+        for (const name of Object.keys(btnMap)) {
+            const el = document.getElementById(name);
+            el.addEventListener('mousedown', () => setKey(name, true));
+            el.addEventListener('mouseup', () => setKey(name, false));
+            el.addEventListener('mouseleave', () => setKey(name, false));
+            el.addEventListener('touchstart', e => { e.preventDefault(); setKey(name, true); });
+            el.addEventListener('touchend', () => setKey(name, false));
+        }
+
+        document.getElementById('stop').addEventListener('click', () => {
+            for (const k of Object.keys(keys)) keys[k] = false;
+            sendKeys();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key in keyToName) setKey(keyToName[e.key], true);
+        });
+        document.addEventListener('keyup', e => {
+            if (e.key in keyToName) setKey(keyToName[e.key], false);
+        });
     </script>
 </body>
 </html>

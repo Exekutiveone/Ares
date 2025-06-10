@@ -60,6 +60,19 @@ export class Car {
     if (key) this.keys[key] = true;
   }
 
+  setKeys(state) {
+    const aliases = {
+      up: 'ArrowUp',
+      down: 'ArrowDown',
+      left: 'ArrowLeft',
+      right: 'ArrowRight'
+    };
+    for (const [name, val] of Object.entries(state)) {
+      const key = aliases[name] || name;
+      if (key in this.keys) this.keys[key] = !!val;
+    }
+  }
+
   drawBorder(canvasWidth, canvasHeight) {
     const m = this.margin;
     this.ctx.fillStyle = '#aaa';
