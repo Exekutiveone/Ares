@@ -27,9 +27,16 @@ let dragX = 0;
 let dragY = 0;
 let targetMarker = gameMap.target;
 
+function refreshCarObjects() {
+  const list = obstacles.slice();
+  if (targetMarker) list.push(targetMarker);
+  car.objects = list;
+}
+
 const carImage = new Image();
 carImage.src = 'extracted_foreground.png';
 const car = new Car(ctx, carImage, 0.5, 0, obstacles, { startX: 100, startY: 100 });
+refreshCarObjects();
 
 function resizeCanvas() {
   canvas.width = gameMap.cols * CELL_SIZE;
@@ -56,8 +63,9 @@ canvas.addEventListener('mouseup', () => {
 
   if (removeCheckbox.checked) {
     if (targetMarker &&
-        dragX <= targetMarker.x && dragX + CELL_SIZE >= targetMarker.x &&
-        dragY <= targetMarker.y && dragY + CELL_SIZE >= targetMarker.y) {
+        dragX === targetMarker.x &&
+        dragY === targetMarker.y &&
+        previewSize === targetMarker.radius) {
       targetMarker = null;
       gameMap.target = null;
     }
@@ -66,16 +74,13 @@ canvas.addEventListener('mouseup', () => {
     if (i !== -1) obstacles.splice(i, 1);
 
   } else if (selected === 'target') {
-    targetMarker = new Target(
-      dragX + CELL_SIZE / 2,
-      dragY + CELL_SIZE / 2,
-      Math.floor(CELL_SIZE / 3)
-    );
+    targetMarker = new Target(dragX, dragY, previewSize);
     gameMap.target = targetMarker;
   } else {
     obstacles.push(new Obstacle(dragX, dragY, previewSize));
   }
 
+  refreshCarObjects();
   isDragging = false;
 });
 
@@ -140,7 +145,7 @@ function loadMapFile(e) {
     CELL_SIZE = gameMap.cellSize;
     obstacles = gameMap.obstacles;
     targetMarker = gameMap.target;
-    car.objects = obstacles;
+    refreshCarObjects();
     document.getElementById('gridWidth').value = gameMap.cols;
     document.getElementById('gridHeight').value = gameMap.rows;
     resizeCanvas();
@@ -174,7 +179,7 @@ document.getElementById('loadMapDb').addEventListener('click', () => {
     CELL_SIZE = gameMap.cellSize;
     obstacles = gameMap.obstacles;
     targetMarker = gameMap.target;
-    car.objects = obstacles;
+    refreshCarObjects();
     document.getElementById('gridWidth').value = gameMap.cols;
     document.getElementById('gridHeight').value = gameMap.rows;
     resizeCanvas();
@@ -222,7 +227,7 @@ document.getElementById('setSizeBtn').addEventListener('click', () => {
   gameMap = new GameMap(w, h, CELL_SIZE);
   obstacles = gameMap.obstacles;
   targetMarker = null;
-  car.objects = obstacles;
+  refreshCarObjects();
   resizeCanvas();
   generateBorder(gameMap);
 });
