@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Telemetry</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
+        #data { margin-bottom: 20px; }
+        video { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    <h1>Car Telemetry Dashboard</h1>
+    <div id="data">
+        <p>Speed: <span id="speed">-</span> km/h</p>
+        <p>RPM: <span id="rpm">-</span></p>
+        <p>Gyro: <span id="gyro">-</span>°</p>
+        <p>Distances: <span id="distances">-</span></p>
+    </div>
+    <video id="video" controls src="http://localhost:5001/api/video"></video>
+
+    <script>
+        async function fetchData() {
+            try {
+                const res = await fetch('http://localhost:5001/api/car');
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('speed').textContent = data.speed;
+                document.getElementById('rpm').textContent = data.rpm;
+                document.getElementById('gyro').textContent = data.gyro;
+                document.getElementById('distances').textContent = JSON.stringify(data.distances);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        setInterval(fetchData, 1000);
+        fetchData();
+    </script>
+</body>
+</html>
