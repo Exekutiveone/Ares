@@ -31,7 +31,12 @@ async function pollControl() {
     const res = await fetch('http://localhost:5002/api/control');
     if (!res.ok) return;
     const data = await res.json();
-    if (data.action) car.setKeysFromAction(data.action);
+    if (data.keys) {
+      car.setKeys(data.keys);
+    } else if (data.action) {
+      // backwards compatibility
+      car.setKeysFromAction(data.action);
+    }
   } catch (err) {
     console.error('pollControl failed', err);
   }

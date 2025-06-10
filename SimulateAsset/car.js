@@ -60,6 +60,12 @@ export class Car {
     if (key) this.keys[key] = true;
   }
 
+  setKeys(state) {
+    for (const k of Object.keys(this.keys)) {
+      if (k in state) this.keys[k] = !!state[k];
+    }
+  }
+
   drawBorder(canvasWidth, canvasHeight) {
     const m = this.margin;
     this.ctx.fillStyle = '#aaa';
