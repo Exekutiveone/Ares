@@ -105,7 +105,6 @@ export class Car {
   }
 
   draw(canvasWidth, canvasHeight) {
-    this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     this.drawBorder(canvasWidth, canvasHeight);
 
     this.ctx.save();
