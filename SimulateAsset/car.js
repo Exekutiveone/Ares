@@ -42,6 +42,22 @@ export class Car {
     window.addEventListener('keyup', e => {
       if (e.key in this.keys) this.keys[e.key] = false;
     });
+
+    this.actionMap = {
+      forward: 'ArrowUp',
+      up: 'ArrowUp',
+      backward: 'ArrowDown',
+      down: 'ArrowDown',
+      left: 'ArrowLeft',
+      right: 'ArrowRight',
+      stop: null
+    };
+  }
+
+  setKeysFromAction(action) {
+    for (const k of Object.keys(this.keys)) this.keys[k] = false;
+    const key = this.actionMap[action];
+    if (key) this.keys[key] = true;
   }
 
   drawBorder(canvasWidth, canvasHeight) {

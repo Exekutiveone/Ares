@@ -148,6 +148,26 @@ python SimulateAsset/control_api.py
 
 This service listens on port `5002` as well.
 
+`GET /api/control` returns the last command that was received:
+
+```bash
+curl http://localhost:5002/api/control
+```
+
+responds with
+
+```json
+{"action": "forward"}
+```
+
+### Control Unit and Map 2
+
+`Transmitter/control_unit.html` provides a small UI with arrow buttons that send
+commands to `/api/control`. The simulation in `SimulateAsset/map2.html` polls
+this endpoint periodically (every 200&nbsp;ms) to obtain the last command and
+maps it to the arrow keys of the virtual car. When both pages are open you can
+steer the vehicle in Map&nbsp;2 with the control unit.
+
 ### API Ports
 
 - `Backend/map_api.py` – 5000
