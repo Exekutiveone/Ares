@@ -31,9 +31,28 @@ let dragY = 0;
 let targetMarker = gameMap.target;
 
 function refreshCarObjects() {
-  const list = obstacles.slice();
-  if (targetMarker) list.push(targetMarker);
-  car.objects = list;
+  // Only obstacles should block the car. The target is handled
+  // separately so the car can pass through it.
+  car.objects = obstacles.slice();
+}
+
+function respawnTarget() {
+  const size = targetMarker ? targetMarker.size : CELL_SIZE;
+  for (let i = 0; i < 100; i++) {
+    const col = Math.floor(Math.random() * gameMap.cols);
+    const row = Math.floor(Math.random() * gameMap.rows);
+    const x = col * CELL_SIZE;
+    const y = row * CELL_SIZE;
+    if (!gameMap.isWithinBounds(x, y, size, size)) continue;
+    const temp = new Target(x, y, size);
+    const collides = obstacles.some(o => o.intersectsRect(x, y, size, size)) ||
+      temp.intersectsRect(car.posX, car.posY, car.imgWidth, car.imgHeight);
+    if (!collides) {
+      targetMarker = temp;
+      gameMap.target = targetMarker;
+      break;
+    }
+  }
 }
 
 const carImage = new Image();
@@ -127,6 +146,10 @@ function loop() {
     ctx.strokeRect(dragX, dragY, previewSize, previewSize);
   }
   car.update(canvas.width, canvas.height);
+  if (targetMarker &&
+      targetMarker.intersectsRect(car.posX, car.posY, car.imgWidth, car.imgHeight)) {
+    respawnTarget();
+  }
 
   redEl.textContent = Math.round(car.redConeLength);
   greenEl.textContent = Math.round(car.greenConeLength);
