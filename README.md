@@ -116,11 +116,11 @@ The JavaScript simulation posts its calculated data to `/api/car` so that
 
 ## Car Control API
 
-A separate Flask service is provided in `Backend/control_api.py` for sending
+A separate Flask service is provided in `SimulateAsset/control_api.py` for sending
 movement commands to the vehicle. Start it with:
 
 ```bash
-python Backend/control_api.py
+python SimulateAsset/control_api.py
 ```
 
 It runs on port `5002` and accepts POST requests to `/api/control` with an
