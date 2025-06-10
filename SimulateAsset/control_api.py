@@ -1,5 +1,4 @@
-"""Control API for the simulated vehicle used by Transmitter/car_dashboard.html."""
-
+main
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
