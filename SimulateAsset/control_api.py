@@ -1,4 +1,3 @@
-main
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -36,6 +35,12 @@ def control_car():
         return jsonify({'error': 'invalid action'}), 400
     controller.execute(action)
     return jsonify({'status': 'ok', 'action': controller.last_action})
+
+
+@app.route('/api/control', methods=['GET'])
+def get_last_action():
+    """Return the last control command that was sent."""
+    return jsonify({'action': controller.last_action})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5002, debug=True)

@@ -24,6 +24,19 @@ const gyroEl = document.getElementById('gyro');
 const TELEMETRY_INTERVAL = 500; // ms
 let lastTelemetry = 0;
 
+const CONTROL_POLL_INTERVAL = 200; // ms
+
+async function pollControl() {
+  try {
+    const res = await fetch('http://localhost:5002/api/control');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.action) car.setKeysFromAction(data.action);
+  } catch (err) {
+    console.error('pollControl failed', err);
+  }
+}
+
 function sendTelemetry(front, rear, left, right) {
   fetch('http://127.0.0.1:5001/api/car', {
     method: 'POST',
@@ -291,4 +304,10 @@ document.getElementById('setSizeBtn').addEventListener('click', () => {
   generateBorder(gameMap, respawnTarget);
 });
 
-carImage.onload = () => { resizeCanvas(); document.getElementById('fetchMaps').click(); loop(); };
+carImage.onload = () => {
+  resizeCanvas();
+  document.getElementById('fetchMaps').click();
+  setInterval(pollControl, CONTROL_POLL_INTERVAL);
+  pollControl();
+  loop();
+};
