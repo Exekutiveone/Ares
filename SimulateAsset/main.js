@@ -52,8 +52,10 @@ dropdown.addEventListener('change', () => {
 
 canvas.addEventListener('mousedown', e => {
   const rect = canvas.getBoundingClientRect();
-  dragX = Math.floor((e.clientX - rect.left) / CELL_SIZE) * CELL_SIZE;
-  dragY = Math.floor((e.clientY - rect.top) / CELL_SIZE) * CELL_SIZE;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  dragX = Math.floor((e.clientX - rect.left) * scaleX / CELL_SIZE) * CELL_SIZE;
+  dragY = Math.floor((e.clientY - rect.top) * scaleY / CELL_SIZE) * CELL_SIZE;
   isDragging = true;
 });
 
@@ -87,8 +89,10 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('mousemove', e => {
   if (!isDragging) return;
   const rect = canvas.getBoundingClientRect();
-  dragX = Math.floor((e.clientX - rect.left) / CELL_SIZE) * CELL_SIZE;
-  dragY = Math.floor((e.clientY - rect.top) / CELL_SIZE) * CELL_SIZE;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  dragX = Math.floor((e.clientX - rect.left) * scaleX / CELL_SIZE) * CELL_SIZE;
+  dragY = Math.floor((e.clientY - rect.top) * scaleY / CELL_SIZE) * CELL_SIZE;
 });
 
 function drawGrid() {
