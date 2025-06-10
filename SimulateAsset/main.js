@@ -7,7 +7,9 @@ import * as db from './db.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const dropdown = document.getElementById('obstacleSize');
+// Dropdown for choosing obstacle size
+const sizeDropdown = document.getElementById('obstacleSize');
+// Dedicated dropdown to toggle target placement mode
 const targetDropdown = document.getElementById('targetMode');
 const removeCheckbox = document.getElementById('removeMode');
 const generateMazeBtn = document.getElementById('generateMaze');
@@ -22,7 +24,7 @@ const blueBackEl = document.getElementById('blueBack');
 let gameMap = new GameMap(20, 15);
 let CELL_SIZE = gameMap.cellSize;
 let obstacles = gameMap.obstacles;
-let previewSize = parseInt(dropdown.value);
+let previewSize = parseInt(sizeDropdown.value);
 let isDragging = false;
 let dragX = 0;
 let dragY = 0;
@@ -39,8 +41,8 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 
-dropdown.addEventListener('change', () => {
-  const val = dropdown.value;
+sizeDropdown.addEventListener('change', () => {
+  const val = sizeDropdown.value;
   previewSize = parseInt(val) || CELL_SIZE;
 });
 
