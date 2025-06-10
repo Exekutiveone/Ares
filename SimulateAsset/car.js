@@ -76,8 +76,9 @@ export class Car {
         const closestX = fx + vx * proj;
         const closestY = fy + vy * proj;
         const distSq = (o.x - closestX) ** 2 + (o.y - closestY) ** 2;
-        if (distSq <= o.radius ** 2) {
-          const offset = Math.sqrt(o.radius ** 2 - distSq);
+        const r = o.radius != null ? o.radius : (o.size / 2);
+        if (distSq <= r * r) {
+          const offset = Math.sqrt(r * r - distSq);
           maxLen = proj - offset;
         }
       }
@@ -99,6 +100,8 @@ export class Car {
     this.ctx.lineTo(rightX, rightY);
     this.ctx.closePath();
     this.ctx.fill();
+
+    return maxLen;
   }
 
   draw(canvasWidth, canvasHeight) {
@@ -113,72 +116,71 @@ export class Car {
     this.ctx.restore();
 
     for (const o of this.objects) {
-      this.ctx.beginPath();
-      this.ctx.arc(o.x, o.y, o.radius, 0, 2 * Math.PI);
-      this.ctx.fillStyle = '#888';
-      this.ctx.fill();
+      if (typeof o.draw === 'function') {
+        o.draw(this.ctx);
+      }
     }
 
-    this.drawKegel(18, 40, 700, Math.PI, 'red', 6);
-    this.drawKegel(45, 40, 400, Math.PI, 'green', 140);
-    for (const a of [[65,7], [72,7], [91,7], [97,7]]) this.drawKegel(a[0], a[1], 150, -Math.PI/2, 'blue', 8);
-    for (const a of [[64,74], [71,74], [90,74], [97,74]]) this.drawKegel(a[0], a[1], 150, Math.PI/2, 'blue', 8);
+    this.redConeLength = this.drawKegel(18, 40, 700, Math.PI, 'red', 6);
+    this.greenConeLength = this.drawKegel(45, 40, 400, Math.PI, 'green', 140);
+    const bluePoints = [[65,7], [72,7], [91,7], [97,7]];
+    this.blueConeLength = this.drawKegel(bluePoints[0][0], bluePoints[0][1], 150, -Math.PI/2, 'blue', 8);
+    for (const a of bluePoints.slice(1)) this.drawKegel(a[0], a[1], 150, -Math.PI/2, 'blue', 8);
+    const bluePoints2 = [[64,74], [71,74], [90,74], [97,74]];
+    for (const a of bluePoints2) this.drawKegel(a[0], a[1], 150, Math.PI/2, 'blue', 8);
     this.drawKegel(143, 37, 150, 0, 'blue', 8);
     this.drawKegel(143, 43, 150, 0, 'blue', 8);
   }
 
-  // In car.js, replace update(...) mit:
+  update(canvasWidth, canvasHeight) {
+    if (this.keys.ArrowUp) this.acceleration = this.accelRate;
+    else if (this.keys.ArrowDown) this.acceleration = -this.accelRate;
+    else this.acceleration = this.velocity > 0
+      ? -this.decelRate
+      : this.velocity < 0
+        ? this.decelRate
+        : 0;
 
-update(canvasWidth, canvasHeight) {
-  if (this.keys.ArrowUp) this.acceleration = this.accelRate
-  else if (this.keys.ArrowDown) this.acceleration = -this.accelRate
-  else this.acceleration = this.velocity > 0
-    ? -this.decelRate
-    : this.velocity < 0
-      ? this.decelRate
-      : 0
+    if (this.keys.ArrowLeft) this.angularAcceleration = -this.rotAccelRate;
+    else if (this.keys.ArrowRight) this.angularAcceleration = this.rotAccelRate;
+    else this.angularAcceleration = this.angularVelocity > 0
+      ? -this.rotDecelRate
+      : this.angularVelocity < 0
+        ? this.rotDecelRate
+        : 0;
 
-  if (this.keys.ArrowLeft) this.angularAcceleration = -this.rotAccelRate
-  else if (this.keys.ArrowRight) this.angularAcceleration = this.rotAccelRate
-  else this.angularAcceleration = this.angularVelocity > 0
-    ? -this.rotDecelRate
-    : this.angularVelocity < 0
-      ? this.rotDecelRate
-      : 0
+    this.velocity += this.acceleration;
+    this.angularVelocity += this.angularAcceleration;
+    this.velocity = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.velocity));
+    this.angularVelocity = Math.max(-0.03, Math.min(0.03, this.angularVelocity));
 
-  this.velocity += this.acceleration
-  this.angularVelocity += this.angularAcceleration
-  this.velocity = Math.max(-this.maxSpeed, Math.min(this.maxSpeed, this.velocity))
-  this.angularVelocity = Math.max(-0.03, Math.min(0.03, this.angularVelocity))
+    if (Math.abs(this.velocity) < 0.01 && !this.keys.ArrowUp && !this.keys.ArrowDown) this.velocity = 0;
+    if (Math.abs(this.angularVelocity) < 0.001 && !this.keys.ArrowLeft && !this.keys.ArrowRight) this.angularVelocity = 0;
 
-  if (Math.abs(this.velocity) < 0.01 && !this.keys.ArrowUp && !this.keys.ArrowDown) this.velocity = 0
-  if (Math.abs(this.angularVelocity) < 0.001 && !this.keys.ArrowLeft && !this.keys.ArrowRight) this.angularVelocity = 0
+    const nx = this.posX + Math.cos(this.rotation) * this.velocity;
+    const ny = this.posY + Math.sin(this.rotation) * this.velocity;
 
-  const nx = this.posX + Math.cos(this.rotation) * this.velocity
-  const ny = this.posY + Math.sin(this.rotation) * this.velocity
+    const inBounds =
+      nx >= this.margin &&
+      ny >= this.margin &&
+      nx + this.imgWidth <= canvasWidth - this.margin &&
+      ny + this.imgHeight <= canvasHeight - this.margin;
 
-  const inBounds =
-    nx >= this.margin &&
-    ny >= this.margin &&
-    nx + this.imgWidth <= canvasWidth - this.margin &&
-    ny + this.imgHeight <= canvasHeight - this.margin
-
-  if (inBounds) {
-    const hit = this.objects.some(obs =>
-      obs.intersectsRect(nx, ny, this.imgWidth, this.imgHeight)
-    )
-    if (!hit) {
-      this.posX = nx
-      this.posY = ny
-      this.rotation += this.angularVelocity
+    if (inBounds) {
+      const hit = this.objects.some(obs =>
+        obs.intersectsRect(nx, ny, this.imgWidth, this.imgHeight)
+      );
+      if (!hit) {
+        this.posX = nx;
+        this.posY = ny;
+        this.rotation += this.angularVelocity;
+      } else {
+        this.velocity = this.acceleration = this.angularVelocity = this.angularAcceleration = 0;
+      }
     } else {
-      this.velocity = this.acceleration = this.angularVelocity = this.angularAcceleration = 0
+      this.velocity = this.acceleration = this.angularVelocity = this.angularAcceleration = 0;
     }
-  } else {
-    this.velocity = this.acceleration = this.angularVelocity = this.angularAcceleration = 0
+
+    this.draw(canvasWidth, canvasHeight);
   }
-
-  this.draw(canvasWidth, canvasHeight)
-}
-
 }
