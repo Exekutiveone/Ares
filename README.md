@@ -111,7 +111,9 @@ values, e.g.:
 ```
 
 The JavaScript simulation posts its calculated data to `/api/car` so that
-`Transmitter/car_dashboard.html` can show the live telemetry values.
+`Transmitter/car_dashboard.html` can show the live telemetry values. Open this
+HTML file in your browser to see the dashboard and use the arrow cross to send
+movement commands.
 
 
 ## Car Control API
@@ -136,3 +138,18 @@ Valid actions are `forward`, `backward`, `left`, `right` and `stop` (the values
 `up` and `down` are accepted as synonyms for `forward` and `backward`). The
 implementation simply records the last action; integration with actual hardware
 can be added where indicated in the code.
+
+For the JavaScript simulation the same API is provided in
+`SimulateAsset/control_api.py`. Start it with:
+
+```bash
+python SimulateAsset/control_api.py
+```
+
+This service listens on port `5002` as well.
+
+### API Ports
+
+- `Backend/map_api.py` – 5000
+- `SimulateAsset/car_api.py` – 5001
+- `SimulateAsset/control_api.py` – 5002
