@@ -61,6 +61,7 @@ export class Car {
   }
 
   setKeys(state) {
+
     const aliases = {
       up: 'ArrowUp',
       down: 'ArrowDown',
@@ -70,6 +71,10 @@ export class Car {
     for (const [name, val] of Object.entries(state)) {
       const key = aliases[name] || name;
       if (key in this.keys) this.keys[key] = !!val;
+=======
+    for (const k of Object.keys(this.keys)) {
+      if (k in state) this.keys[k] = !!state[k];
+ main
     }
   }
 
