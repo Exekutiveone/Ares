@@ -99,7 +99,11 @@ function aStar(start, goal) {
       }
     }
   }
+
+  const inBounds = (x, y) => x >= 0 && x < cols - 1 && y >= 0 && y < rows - 1;
+
   const inBounds = (x, y) => x >= 0 && x < cols && y >= 0 && y < rows;
+main
   const key = (x, y) => `${x},${y}`;
   const dirs = [
     [1, 0], [-1, 0], [0, 1], [0, -1]
@@ -132,7 +136,14 @@ function aStar(start, goal) {
       const nx = current.x + dx;
       const ny = current.y + dy;
       if (!inBounds(nx, ny)) continue;
+
+      if (obstaclesSet.has(key(nx, ny)) ||
+          obstaclesSet.has(key(nx + 1, ny)) ||
+          obstaclesSet.has(key(nx, ny + 1)) ||
+          obstaclesSet.has(key(nx + 1, ny + 1))) continue;
+
       if (obstaclesSet.has(key(nx, ny))) continue;
+main
       const tentativeG = g[current.y][current.x] + 1;
       if (tentativeG < g[ny][nx]) {
         came[key(nx, ny)] = current;
@@ -393,6 +404,13 @@ calcPathBtn.addEventListener('click', () => {
     x: Math.floor(targetMarker.x / CELL_SIZE),
     y: Math.floor(targetMarker.y / CELL_SIZE)
   };
+ar7np7-codex/add-button-for-optimal-pathfinder-on-map-2.html
+  start.x = Math.min(start.x, gameMap.cols - 2);
+  start.y = Math.min(start.y, gameMap.rows - 2);
+  goal.x = Math.min(goal.x, gameMap.cols - 2);
+  goal.y = Math.min(goal.y, gameMap.rows - 2);
+
+ain
   pathCells = aStar(start, goal);
 });
 
