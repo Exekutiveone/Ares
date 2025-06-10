@@ -112,8 +112,8 @@ values, e.g.:
 
 The JavaScript simulation posts its calculated data to `/api/car` so that
 `Transmitter/car_dashboard.html` can show the live telemetry values. Open this
-HTML file in your browser to see the dashboard and use the arrow cross to send
-movement commands.
+HTML file in your browser to see the dashboard and use the arrow cross or the
+keyboard to send movement commands.
 
 
 ## Car Control API
@@ -125,19 +125,18 @@ movement commands to the vehicle. Start it with:
 python SimulateAsset/control_api.py
 ```
 
-It runs on port `5002` and accepts POST requests to `/api/control` with an
-`action` field:
+It runs on port `5002` and accepts POST requests to `/api/control` with a
+`keys` object describing which control buttons are pressed:
 
 ```bash
 curl -X POST http://localhost:5002/api/control \
      -H "Content-Type: application/json" \
-     -d '{"action": "forward"}'
+     -d '{"keys": {"up": true, "left": true}}'
 ```
 
-Valid actions are `forward`, `backward`, `left`, `right` and `stop` (the values
-`up` and `down` are accepted as synonyms for `forward` and `backward`). The
-implementation simply records the last action; integration with actual hardware
-can be added where indicated in the code.
+Each key (`up`, `down`, `left`, `right`) is optional and maps to the
+corresponding arrow key of the simulated car. This allows multiple directions to
+be active at once.
 
 For the JavaScript simulation the same API is provided in
 `SimulateAsset/control_api.py`. Start it with:
@@ -148,7 +147,7 @@ python SimulateAsset/control_api.py
 
 This service listens on port `5002` as well.
 
-`GET /api/control` returns the last command that was received:
+`GET /api/control` returns the current key state:
 
 ```bash
 curl http://localhost:5002/api/control
@@ -157,16 +156,17 @@ curl http://localhost:5002/api/control
 responds with
 
 ```json
-{"action": "forward"}
+{"keys": {"up": true, "left": false, "right": false, "down": false}}
 ```
 
 ### Control Unit and Map 2
 
-`Transmitter/control_unit.html` provides a small UI with arrow buttons that send
-commands to `/api/control`. The simulation in `SimulateAsset/map2.html` polls
-this endpoint periodically (every 200&nbsp;ms) to obtain the last command and
-maps it to the arrow keys of the virtual car. When both pages are open you can
-steer the vehicle in Map&nbsp;2 with the control unit.
+`Transmitter/control_unit.html` provides a small UI with arrow buttons and
+keyboard support that send the pressed key state to `/api/control`. The
+simulation in `SimulateAsset/map2.html` polls this endpoint periodically (every
+200&nbsp;ms) and applies the key state to the virtual car. When both pages are
+open you can steer the vehicle in Map&nbsp;2 with the control unit, including
+multiple keys at once.
 
 ### API Ports
 
