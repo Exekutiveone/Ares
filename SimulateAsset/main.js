@@ -21,6 +21,22 @@ const speedEl = document.getElementById('speed');
 const rpmEl = document.getElementById('rpm');
 const gyroEl = document.getElementById('gyro');
 
+const TELEMETRY_INTERVAL = 500; // ms
+let lastTelemetry = 0;
+
+function sendTelemetry(front, rear, left, right) {
+  fetch('http://127.0.0.1:5001/api/car', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      speed: car.speed,
+      rpm: car.rpm,
+      gyro: car.gyro,
+      distances: { front, rear, left, right }
+    })
+  }).catch(err => console.error('sendTelemetry failed', err));
+}
+
 let gameMap = new GameMap(20, 15);
 let CELL_SIZE = gameMap.cellSize;
 let obstacles = gameMap.obstacles;
@@ -166,6 +182,16 @@ function loop() {
   speedEl.textContent = Math.round(car.speed);
   rpmEl.textContent = Math.round(car.rpm);
   gyroEl.textContent = car.gyro.toFixed(1);
+
+  const now = Date.now();
+  if (now - lastTelemetry >= TELEMETRY_INTERVAL) {
+    const front = Math.round(car.redConeLength);
+    const rear = Math.round(bb);
+    const left = Math.round(Math.min(bl1, bl2));
+    const right = Math.round(Math.min(br1, br2));
+    sendTelemetry(front, rear, left, right);
+    lastTelemetry = now;
+  }
 
   requestAnimationFrame(loop);
 }
