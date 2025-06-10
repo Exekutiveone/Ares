@@ -17,6 +17,9 @@ const blueLeft2El = document.getElementById('blueLeft2');
 const blueRight1El = document.getElementById('blueRight1');
 const blueRight2El = document.getElementById('blueRight2');
 const blueBackEl = document.getElementById('blueBack');
+const speedEl = document.getElementById('speed');
+const rpmEl = document.getElementById('rpm');
+const gyroEl = document.getElementById('gyro');
 
 let gameMap = new GameMap(20, 15);
 let CELL_SIZE = gameMap.cellSize;
@@ -137,6 +140,9 @@ function loop() {
   blueRight1El.textContent = Math.round(br1);
   blueRight2El.textContent = Math.round(br2);
   blueBackEl.textContent = Math.round(bb);
+  speedEl.textContent = Math.round(car.speed);
+  rpmEl.textContent = Math.round(car.rpm);
+  gyroEl.textContent = car.gyro.toFixed(1);
 
   requestAnimationFrame(loop);
 }

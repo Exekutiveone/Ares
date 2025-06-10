@@ -24,6 +24,11 @@ export class Car {
     this.rotAccelRate = 0.0005;
     this.rotDecelRate = 0.003;
 
+    this.maxRpm = 5000;
+    this.speed = 0;
+    this.rpm = 0;
+    this.gyro = 0;
+
     this.keys = {
       ArrowUp: false,
       ArrowDown: false,
@@ -179,6 +184,10 @@ export class Car {
     } else {
       this.velocity = this.acceleration = this.angularVelocity = this.angularAcceleration = 0;
     }
+
+    this.speed = Math.abs(this.velocity * 60);
+    this.rpm = Math.abs(this.velocity / this.maxSpeed * this.maxRpm);
+    this.gyro = ((this.rotation * 180 / Math.PI) % 360 + 360) % 360;
 
     this.draw(canvasWidth, canvasHeight);
   }
