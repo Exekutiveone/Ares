@@ -1,12 +1,16 @@
 import { Car } from './car.js';
 import { GameMap } from './map.js';
 import { Obstacle } from './obstacle.js';
+import { Target } from './Target.js';
 import { generateMaze, generateBorder } from './mapGenerator.js';
 import * as db from './db.js';
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const dropdown = document.getElementById('obstacleSize');
+// Dropdown for choosing obstacle size
+const sizeDropdown = document.getElementById('obstacleSize');
+// Dedicated dropdown to toggle target placement mode
+const targetDropdown = document.getElementById('targetMode');
 const removeCheckbox = document.getElementById('removeMode');
 const generateMazeBtn = document.getElementById('generateMaze');
 const redEl = document.getElementById('redLength');
@@ -20,7 +24,7 @@ const blueBackEl = document.getElementById('blueBack');
 let gameMap = new GameMap(20, 15);
 let CELL_SIZE = gameMap.cellSize;
 let obstacles = gameMap.obstacles;
-let previewSize = parseInt(dropdown.value);
+let previewSize = parseInt(sizeDropdown.value);
 let isDragging = false;
 let dragX = 0;
 let dragY = 0;
@@ -37,8 +41,8 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 
-dropdown.addEventListener('change', () => {
-  const val = dropdown.value;
+sizeDropdown.addEventListener('change', () => {
+  const val = sizeDropdown.value;
   previewSize = parseInt(val) || CELL_SIZE;
 });
 
@@ -51,7 +55,6 @@ canvas.addEventListener('mousedown', e => {
 
 canvas.addEventListener('mouseup', () => {
   if (!isDragging) return;
-  const selected = dropdown.value;
 
   if (removeCheckbox.checked) {
     if (targetMarker &&
@@ -64,8 +67,12 @@ canvas.addEventListener('mouseup', () => {
     const i = obstacles.findIndex(o => o.x === dragX && o.y === dragY);
     if (i !== -1) obstacles.splice(i, 1);
 
-  } else if (selected === 'target') {
-    targetMarker = { x: dragX + CELL_SIZE/2, y: dragY + CELL_SIZE/2, radius: Math.floor(CELL_SIZE/3) };
+  } else if (targetDropdown.value === 'target') {
+    targetMarker = new Target(
+      dragX + CELL_SIZE / 2,
+      dragY + CELL_SIZE / 2,
+      Math.floor(CELL_SIZE / 3)
+    );
     gameMap.target = targetMarker;
   } else {
     obstacles.push(new Obstacle(dragX, dragY, previewSize));
@@ -102,12 +109,9 @@ function loop() {
   drawGrid();
   for (const o of obstacles) o.draw(ctx);
   if (targetMarker) {
-    ctx.fillStyle='green';
-    ctx.beginPath();
-    ctx.arc(targetMarker.x, targetMarker.y, targetMarker.radius,0,Math.PI*2);
-    ctx.fill();
+    targetMarker.draw(ctx);
   }
-  if (isDragging && dropdown.value!=='target' && !removeCheckbox.checked) {
+  if (isDragging && targetDropdown.value!=='target' && !removeCheckbox.checked) {
     ctx.strokeStyle='red';
     ctx.lineWidth=2;
     ctx.strokeRect(dragX, dragY, previewSize, previewSize);

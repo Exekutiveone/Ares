@@ -68,3 +68,11 @@ Available routes:
 - `GET /api/assets/<id>` – fetch one asset
 - `PUT /api/assets/<id>` – update fields of an asset
 - `DELETE /api/assets/<id>` – remove an asset
+
+## SimulateAsset Map Editor
+
+The `SimulateAsset` folder contains a small HTML interface for creating maps
+with obstacles and target points. Open `SimulateAsset/map2.html` in a browser
+to interact with the editor. Use the **Target** dropdown to place a green
+marker on the grid or the remove checkbox to erase it again. Maps can be saved
+to JSON or uploaded through the Flask API described above.
