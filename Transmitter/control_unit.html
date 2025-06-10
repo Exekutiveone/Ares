@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Control Unit</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
+        #controls {
+            display: inline-grid;
+            grid-template-areas:
+                '. up .'
+                'left stop right'
+                '. down .';
+            gap: 5px;
+            margin-top: 20px;
+        }
+        #controls button {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+        }
+        #up { grid-area: up; }
+        #down { grid-area: down; }
+        #left { grid-area: left; }
+        #right { grid-area: right; }
+        #stop { grid-area: stop; }
+    </style>
+</head>
+<body>
+    <h1>Control Unit</h1>
+    <div id="controls">
+        <button id="up">&#8593;</button>
+        <button id="left">&#8592;</button>
+        <button id="stop">&#9632;</button>
+        <button id="right">&#8594;</button>
+        <button id="down">&#8595;</button>
+    </div>
+
+    <script>
+        async function sendCommand(action) {
+            try {
+                await fetch('http://localhost:5002/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('up').addEventListener('click', () => sendCommand('up'));
+        document.getElementById('down').addEventListener('click', () => sendCommand('down'));
+        document.getElementById('left').addEventListener('click', () => sendCommand('left'));
+        document.getElementById('right').addEventListener('click', () => sendCommand('right'));
+        document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
+    </script>
+</body>
+</html>
