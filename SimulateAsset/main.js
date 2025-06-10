@@ -10,6 +10,7 @@ const ctx = canvas.getContext('2d');
 const dropdown = document.getElementById('obstacleSize');
 const removeCheckbox = document.getElementById('removeMode');
 const generateMazeBtn = document.getElementById('generateMaze');
+const calcPathBtn = document.getElementById('calcPathBtn');
 const redEl = document.getElementById('redLength');
 const greenEl = document.getElementById('greenLength');
 const blueLeft1El = document.getElementById('blueLeft1');
@@ -58,6 +59,7 @@ let isDragging = false;
 let dragX = 0;
 let dragY = 0;
 let targetMarker = gameMap.target;
+let pathCells = [];
 
 function refreshCarObjects() {
   // Only obstacles should block the car. The target is handled
@@ -79,9 +81,74 @@ function respawnTarget() {
     if (!collides) {
       targetMarker = temp;
       gameMap.target = targetMarker;
+      pathCells = [];
       break;
     }
   }
+}
+
+function aStar(start, goal) {
+  const cols = gameMap.cols;
+  const rows = gameMap.rows;
+  const obstaclesSet = new Set();
+  for (const o of obstacles) {
+    const cells = o.size / CELL_SIZE;
+    for (let dx = 0; dx < cells; dx++) {
+      for (let dy = 0; dy < cells; dy++) {
+        obstaclesSet.add(`${o.x / CELL_SIZE + dx},${o.y / CELL_SIZE + dy}`);
+      }
+    }
+  }
+  const inBounds = (x, y) => x >= 0 && x < cols - 1 && y >= 0 && y < rows - 1;
+  const key = (x, y) => `${x},${y}`;
+  const dirs = [
+    [1, 0], [-1, 0], [0, 1], [0, -1]
+  ];
+  const g = Array.from({ length: rows }, () => Array(cols).fill(Infinity));
+  const f = Array.from({ length: rows }, () => Array(cols).fill(Infinity));
+  const came = {};
+  const open = [];
+  const openSet = new Set();
+  const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  g[start.y][start.x] = 0;
+  f[start.y][start.x] = h(start, goal);
+  open.push({ x: start.x, y: start.y });
+  openSet.add(key(start.x, start.y));
+  while (open.length) {
+    open.sort((a, b) => f[a.y][a.x] - f[b.y][b.x]);
+    const current = open.shift();
+    openSet.delete(key(current.x, current.y));
+    if (current.x === goal.x && current.y === goal.y) {
+      const path = [{ x: current.x, y: current.y }];
+      let cKey = key(current.x, current.y);
+      while (came[cKey]) {
+        const p = came[cKey];
+        path.push({ x: p.x, y: p.y });
+        cKey = key(p.x, p.y);
+      }
+      return path.reverse();
+    }
+    for (const [dx, dy] of dirs) {
+      const nx = current.x + dx;
+      const ny = current.y + dy;
+      if (!inBounds(nx, ny)) continue;
+      if (obstaclesSet.has(key(nx, ny)) ||
+          obstaclesSet.has(key(nx + 1, ny)) ||
+          obstaclesSet.has(key(nx, ny + 1)) ||
+          obstaclesSet.has(key(nx + 1, ny + 1))) continue;
+      const tentativeG = g[current.y][current.x] + 1;
+      if (tentativeG < g[ny][nx]) {
+        came[key(nx, ny)] = current;
+        g[ny][nx] = tentativeG;
+        f[ny][nx] = tentativeG + h({ x: nx, y: ny }, goal);
+        if (!openSet.has(key(nx, ny))) {
+          open.push({ x: nx, y: ny });
+          openSet.add(key(nx, ny));
+        }
+      }
+    }
+  }
+  return [];
 }
 
 const carImage = new Image();
@@ -134,6 +201,7 @@ canvas.addEventListener('mouseup', () => {
   }
 
   refreshCarObjects();
+  pathCells = [];
   isDragging = false;
 });
 
@@ -168,6 +236,17 @@ function loop() {
   for (const o of obstacles) o.draw(ctx);
   if (targetMarker) {
     targetMarker.draw(ctx);
+  }
+  if (pathCells.length) {
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    pathCells.forEach((p, i) => {
+      const px = p.x * CELL_SIZE + CELL_SIZE / 2;
+      const py = p.y * CELL_SIZE + CELL_SIZE / 2;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    });
+    ctx.stroke();
   }
   if (isDragging && dropdown.value!=='target' && !removeCheckbox.checked) {
     ctx.strokeStyle='red';
@@ -218,6 +297,7 @@ function loadMapFile(e) {
     obstacles = gameMap.obstacles;
     targetMarker = gameMap.target;
     refreshCarObjects();
+    pathCells = [];
     document.getElementById('gridWidth').value = gameMap.cols;
     document.getElementById('gridHeight').value = gameMap.rows;
     resizeCanvas();
@@ -252,6 +332,7 @@ document.getElementById('loadMapDb').addEventListener('click', () => {
     obstacles = gameMap.obstacles;
     targetMarker = gameMap.target;
     refreshCarObjects();
+    pathCells = [];
     document.getElementById('gridWidth').value = gameMap.cols;
     document.getElementById('gridHeight').value = gameMap.rows;
     resizeCanvas();
@@ -301,7 +382,25 @@ document.getElementById('setSizeBtn').addEventListener('click', () => {
   targetMarker = null;
   refreshCarObjects();
   resizeCanvas();
+  pathCells = [];
   generateBorder(gameMap, respawnTarget);
+});
+
+calcPathBtn.addEventListener('click', () => {
+  if (!targetMarker) return;
+  const start = {
+    x: Math.floor((car.posX + car.imgWidth / 2) / CELL_SIZE),
+    y: Math.floor((car.posY + car.imgHeight / 2) / CELL_SIZE)
+  };
+  const goal = {
+    x: Math.floor(targetMarker.x / CELL_SIZE),
+    y: Math.floor(targetMarker.y / CELL_SIZE)
+  };
+  start.x = Math.min(start.x, gameMap.cols - 2);
+  start.y = Math.min(start.y, gameMap.rows - 2);
+  goal.x = Math.min(goal.x, gameMap.cols - 2);
+  goal.y = Math.min(goal.y, gameMap.rows - 2);
+  pathCells = aStar(start, goal);
 });
 
 carImage.onload = () => {

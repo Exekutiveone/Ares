@@ -33,14 +33,19 @@ export function generateMaze(gameMap, respawnTarget) {
   let y = 1;
   while (y < rows - 1) {
     const h = Math.floor(Math.random() * (maxPassage - minPassage + 1)) + minPassage;
-    for (let x = 1; x < cols - 1; x++) if (Math.random() < 0.3) {
-      const ox = x * cellSize;
-      const oy = y * cellSize;
-      if (target && target.intersectsRect(ox, oy, cellSize, cellSize)) {
-        if (typeof respawnTarget === 'function') respawnTarget();
-        else continue;
+    for (let x = 3; x < cols - 3;) {
+      if (Math.random() < 0.3) {
+        const ox = x * cellSize;
+        const oy = y * cellSize;
+        if (target && target.intersectsRect(ox, oy, cellSize, cellSize)) {
+          if (typeof respawnTarget === 'function') respawnTarget();
+          else { x++; continue; }
+        }
+        obstacles.push(new Obstacle(ox, oy, cellSize));
+        x += 3; // leave at least two cells free after each obstacle
+      } else {
+        x++;
       }
-      obstacles.push(new Obstacle(ox, oy, cellSize));
     }
     y += h;
     if (y < rows - 1) {
