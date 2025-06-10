@@ -29,6 +29,17 @@ class Car:
 
 car = Car()
 
+@app.route('/api/car', methods=['GET'])
+def get_car_data():
+    """Return the current car telemetry."""
+    return jsonify({
+        'speed': car.speed,
+        'rpm': car.rpm,
+        'gyro': car.gyro,
+        'distances': car.distances
+    })
+
+
 @app.route('/api/car', methods=['POST'])
 def car_data():
     try:
