@@ -16,6 +16,7 @@
     }
     #controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
       padding: 10px;
@@ -71,12 +72,29 @@
     <div class="cone-display">Blau Rechts 1: <span id="blueRight1">0</span> px</div>
     <div class="cone-display">Blau Rechts 2: <span id="blueRight2">0</span> px</div>
     <div class="cone-display">Blau Hinten: <span id="blueBack">0</span> px</div>
+    <label>Size:
+      <input id="gridWidth" type="number" value="20" min="1" style="width:60px"> x
+      <input id="gridHeight" type="number" value="15" min="1" style="width:60px">
+    </label>
+    <button id="setSizeBtn">Set Size</button>
+    <input type="text" id="mapName" placeholder="Map name">
+    <button id="saveMapDb">Save Map</button>
+    <select id="mapSelect"></select>
+    <button id="fetchMaps">Karten abrufen</button>
+    <button id="loadMapDb">Karte laden</button>
+    <input type="text" id="renameMapName" placeholder="Neuer Name">
+    <button id="renameMapBtn">Rename</button>
+    <button id="deleteMapBtn">Delete</button>
+    <button id="saveMap">Download Map</button>
+    <button id="loadMapBtn">Load Map</button>
+    <input type="file" id="loadMap" style="display:none" accept="application/json">
   </div>
   <canvas id="canvas"></canvas>
 
   <script type="module">
     import { Car } from './car.js'
     import { Obstacle } from './obstacle.js'
+    import { GameMap } from './map.js'
 
     const canvas = document.getElementById('canvas')
     const ctx = canvas.getContext('2d')
@@ -91,22 +109,22 @@
     const blueRight2El = document.getElementById('blueRight2')
     const blueBackEl = document.getElementById('blueBack')
 
-    let CELL_SIZE = 40
-    const obstacles = []
+    let gameMap = new GameMap(20, 15)
+    let CELL_SIZE = gameMap.cellSize
+    let obstacles = gameMap.obstacles
     let previewSize = parseInt(dropdown.value)
     let isDragging = false
     let dragX = 0
     let dragY = 0
-    let taskMarker = null
+    let taskMarker = gameMap.task
 
     const carImage = new Image()
     carImage.src = 'extracted_foreground.png'
     const car = new Car(ctx, carImage, 0.5, 0, obstacles, { startX: 100, startY: 100 })
 
     function resizeCanvas() {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight - document.getElementById('controls').offsetHeight
-      generateBorder()
+      canvas.width = gameMap.cols * CELL_SIZE
+      canvas.height = gameMap.rows * CELL_SIZE
     }
 
     window.addEventListener('resize', resizeCanvas)
@@ -132,13 +150,15 @@
             dragX <= taskMarker.x && dragX + CELL_SIZE >= taskMarker.x &&
             dragY <= taskMarker.y && dragY + CELL_SIZE >= taskMarker.y) {
           taskMarker = null
+          gameMap.task = null
         }
 
         const i = obstacles.findIndex(o => o.x === dragX && o.y === dragY)
         if (i !== -1) obstacles.splice(i, 1)
 
-      } else if (selected === "task") {
+      } else if (selected === 'task') {
         taskMarker = { x: dragX + CELL_SIZE/2, y: dragY + CELL_SIZE/2, radius: Math.floor(CELL_SIZE/3) }
+        gameMap.task = taskMarker
       } else {
         obstacles.push(new Obstacle(dragX, dragY, previewSize))
       }
@@ -154,8 +174,8 @@
     })
 
     function generateBorder() {
-      const cols = Math.floor(canvas.width / CELL_SIZE)
-      const rows = Math.floor(canvas.height / CELL_SIZE)
+      const cols = gameMap.cols
+      const rows = gameMap.rows
       for (let x = 0; x < cols; x++) {
         for (const y of [0, rows - 1]) {
           obstacles.push(new Obstacle(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE))
@@ -170,8 +190,8 @@
 
     function generateMaze() {
       obstacles.length = 0
-      const cols = Math.floor(canvas.width / CELL_SIZE)
-      const rows = Math.floor(canvas.height / CELL_SIZE)
+      const cols = gameMap.cols
+      const rows = gameMap.rows
       const minPassage = 4, maxPassage = 6
       let y = 1
       while (y < rows - 1) {
@@ -191,6 +211,16 @@
     }
 
     generateMazeBtn.addEventListener('click', generateMaze)
+
+    document.getElementById('saveMap').addEventListener('click', saveMap)
+    document.getElementById('saveMapDb').addEventListener('click', uploadMap)
+    document.getElementById('loadMapBtn').addEventListener('click', () => document.getElementById('loadMap').click())
+    document.getElementById('loadMap').addEventListener('change', loadMap)
+    document.getElementById('loadMapDb').addEventListener('click', loadMapFromDb)
+    document.getElementById('fetchMaps').addEventListener('click', fetchAvailableMaps)
+    document.getElementById('renameMapBtn').addEventListener('click', renameMap)
+    document.getElementById('deleteMapBtn').addEventListener('click', deleteMap)
+    document.getElementById('setSizeBtn').addEventListener('click', resizeMap)
 
     function drawGrid() {
       ctx.strokeStyle = '#ddd'
@@ -212,7 +242,6 @@
 
       redEl.textContent = Math.round(car.redConeLength)
       greenEl.textContent = Math.round(car.greenConeLength)
-      // Blau einzeln
       const bl1 = car.drawKegel(65,7,150,-Math.PI/2,'blue',8)
       const bl2 = car.drawKegel(72,7,150,-Math.PI/2,'blue',8)
       const br1 = car.drawKegel(91,7,150,-Math.PI/2,'blue',8)
@@ -227,7 +256,138 @@
       requestAnimationFrame(loop)
     }
 
-    carImage.onload = () => { resizeCanvas(); loop() }
+    function getCurrentMapData() {
+      return {
+        cols: gameMap.cols,
+        rows: gameMap.rows,
+        cellSize: gameMap.cellSize,
+        obstacles: obstacles.map(o => ({x:o.x, y:o.y, size:o.size})),
+        task: taskMarker
+      }
+    }
+
+    function saveMap() {
+      const data = getCurrentMapData()
+      const blob = new Blob([JSON.stringify(data)], {type: 'application/json'})
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = 'map.json'
+      link.click()
+    }
+
+    function getDefaultMapName() {
+      const d = new Date()
+      return d.toISOString().replace(/[:.]/g, '-')
+    }
+
+    function uploadMap() {
+      let name = document.getElementById('mapName').value.trim()
+      if (!name) {
+        name = getDefaultMapName()
+        document.getElementById('mapName').value = name
+      }
+      const data = getCurrentMapData()
+      fetch('http://127.0.0.1:5000/api/maps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, map: data })
+      }).then(res => {
+        if (res.ok) alert('Gespeichert')
+        else res.text().then(t => alert('Fehler beim Speichern:\n' + t))
+      }).catch(err => {
+        alert('Netzwerkfehler:\n' + err)
+      })
+    }
+
+    function loadMap(e) {
+      const file = e.target.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = () => {
+        const obj = JSON.parse(reader.result)
+        gameMap = GameMap.fromJSON(obj)
+        CELL_SIZE = gameMap.cellSize
+        obstacles = gameMap.obstacles
+        taskMarker = gameMap.task
+        car.objects = obstacles
+        document.getElementById('gridWidth').value = gameMap.cols
+        document.getElementById('gridHeight').value = gameMap.rows
+        resizeCanvas()
+      }
+      reader.readAsText(file)
+    }
+
+    function fetchAvailableMaps() {
+      fetch('http://127.0.0.1:5000/api/maps')
+        .then(res => res.json())
+        .then(data => {
+          const select = document.getElementById('mapSelect')
+          select.innerHTML = ''
+          data.forEach(m => {
+            const opt = document.createElement('option')
+            opt.value = m.id
+            opt.textContent = m.name + ' (' + m.created_at + ')'
+            select.appendChild(opt)
+          })
+        })
+    }
+
+    function loadMapFromDb() {
+      const mapId = document.getElementById('mapSelect').value
+      if (!mapId) { alert('Keine Map ausgewählt'); return }
+      fetch(`http://127.0.0.1:5000/api/maps/${mapId}`)
+        .then(res => res.json())
+        .then(obj => {
+          gameMap = GameMap.fromJSON(obj)
+          CELL_SIZE = gameMap.cellSize
+          obstacles = gameMap.obstacles
+          taskMarker = gameMap.task
+          car.objects = obstacles
+          document.getElementById('gridWidth').value = gameMap.cols
+          document.getElementById('gridHeight').value = gameMap.rows
+          resizeCanvas()
+        })
+    }
+
+    function renameMap() {
+      const mapId = document.getElementById('mapSelect').value
+      const newName = document.getElementById('renameMapName').value.trim()
+      if (!mapId) { alert('Keine Map ausgewählt'); return }
+      if (!newName) { alert('Neuer Name fehlt'); return }
+      fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      }).then(res => {
+        if (res.ok) { fetchAvailableMaps(); alert('Umbenannt') }
+        else res.text().then(t => alert('Fehler beim Umbenennen:\n' + t))
+      })
+    }
+
+    function deleteMap() {
+      const mapId = document.getElementById('mapSelect').value
+      if (!mapId) { alert('Keine Map ausgewählt'); return }
+      if (!confirm('Map löschen?')) return
+      fetch(`http://127.0.0.1:5000/api/maps/${mapId}`, { method: 'DELETE' })
+        .then(res => {
+          if (res.ok) { fetchAvailableMaps(); alert('Gelöscht') }
+          else res.text().then(t => alert('Fehler beim Löschen:\n' + t))
+        })
+    }
+
+    function resizeMap() {
+      const w = parseInt(document.getElementById('gridWidth').value, 10)
+      const h = parseInt(document.getElementById('gridHeight').value, 10)
+      if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) { alert('Invalid size'); return }
+      gameMap = new GameMap(w, h, CELL_SIZE)
+      obstacles = gameMap.obstacles
+      taskMarker = null
+      car.objects = obstacles
+      resizeCanvas()
+      generateBorder()
+    }
+
+    carImage.onload = () => { resizeCanvas(); fetchAvailableMaps(); loop() }
   </script>
 </body>
 </html>
