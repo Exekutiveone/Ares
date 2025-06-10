@@ -1,4 +1,4 @@
-import { Obstacle } from './obstacle.js';
+import { Obstacle } from './Obstacle.js';
 
 export function generateBorder(gameMap) {
   const { cols, rows, cellSize, obstacles } = gameMap;

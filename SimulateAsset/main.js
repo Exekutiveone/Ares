@@ -1,6 +1,6 @@
 import { Car } from './car.js';
 import { GameMap } from './map.js';
-import { Obstacle } from './obstacle.js';
+import { Obstacle } from './Obstacle.js';
 import { Target } from './Target.js';
 import { generateMaze, generateBorder } from './mapGenerator.js';
 import * as db from './db.js';
