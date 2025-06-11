@@ -11,10 +11,21 @@ class CarController:
     def __init__(self):
         self.last_action = None
         self.max_speed = MAX_TOTAL_SPEED
+        # keep a short history so advanced maneuvers can be processed later
+        self.history = []
 
     def execute(self, action: str):
         # Integration with actual car hardware would happen here.
+        # Record the action for potential processing
         self.last_action = action
+        self.history.append(action)
+        # Advanced maneuvers could trigger special routines here
+        if action in {
+            'align_left', 'align_right', 'align_up', 'align_down',
+            'curve_left', 'curve_right', 'circle'
+        }:
+            # Placeholder for servo or steering control logic
+            pass
 
 controller = CarController()
 
@@ -27,6 +38,14 @@ VALID_ACTIONS = {
     # allow arrow style synonyms
     'up': 'forward',
     'down': 'backward',
+    # additional maneuvers
+    'align_left': 'align_left',
+    'align_right': 'align_right',
+    'align_up': 'align_up',
+    'align_down': 'align_down',
+    'curve_left': 'curve_left',
+    'curve_right': 'curve_right',
+    'circle': 'circle',
 }
 
 @app.route('/api/control', methods=['POST'])
