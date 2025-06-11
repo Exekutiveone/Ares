@@ -61,6 +61,45 @@ let dragX = 0;
 let dragY = 0;
 let targetMarker = gameMap.target;
 let pathCells = [];
+let autopilotRunning = false;
+
+async function followPath() {
+  if (autopilotRunning || pathCells.length < 2) return;
+  autopilotRunning = true;
+  car.autopilot = true;
+  for (let i = 0; i < pathCells.length - 1; i++) {
+    const cur = pathCells[i];
+    const next = pathCells[i + 1];
+    let action = null;
+    if (next.x > cur.x) action = 'right';
+    else if (next.x < cur.x) action = 'left';
+    else if (next.y > cur.y) action = 'down';
+    else if (next.y < cur.y) action = 'up';
+    if (action) {
+      try {
+        await fetch('http://localhost:5002/api/control', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        });
+      } catch (err) {
+        console.error('followPath failed', err);
+      }
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+  try {
+    await fetch('http://localhost:5002/api/control', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'stop' })
+    });
+  } catch (err) {
+    console.error('followPath stop failed', err);
+  }
+  car.autopilot = false;
+  autopilotRunning = false;
+}
 
 function refreshCarObjects() {
   // Only obstacles should block the car. The target is handled
@@ -340,6 +379,8 @@ calcPathBtn.addEventListener('click', () => {
   goal.y = Math.min(goal.y, gameMap.rows - 2);
   pathCells = aStar(start, goal, gameMap);
   followPath(car, pathCells, CELL_SIZE);
+  pathCells = aStar(start, goal);
+  followPath();
 });
 
 carImage.onload = () => {
