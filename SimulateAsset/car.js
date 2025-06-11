@@ -1,4 +1,3 @@
-// car.js
 export class Car {
   constructor(ctx, image, scale, margin, objects, { startX = 200, startY = 200 } = {}) {
     this.ctx = ctx;
@@ -29,6 +28,7 @@ export class Car {
     this.rpm = 0;
     this.gyro = 0;
 
+    this.autopilot = false;
     this.keys = {
       ArrowUp: false,
       ArrowDown: false,
@@ -37,10 +37,10 @@ export class Car {
     };
 
     window.addEventListener('keydown', e => {
-      if (e.key in this.keys) this.keys[e.key] = true;
+      if (!this.autopilot && e.key in this.keys) this.keys[e.key] = true;
     });
     window.addEventListener('keyup', e => {
-      if (e.key in this.keys) this.keys[e.key] = false;
+      if (!this.autopilot && e.key in this.keys) this.keys[e.key] = false;
     });
 
     this.actionMap = {
