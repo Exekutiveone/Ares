@@ -26,6 +26,7 @@
         #left { grid-area: left; }
         #right { grid-area: right; }
         #stop { grid-area: stop; }
+
         #maneuvers {
             display: flex;
             flex-wrap: wrap;
@@ -36,6 +37,7 @@
             flex: 1 1 100px;
             padding: 5px 10px;
         }
+
         #gridCanvas { background: #222; border: 1px solid #555; margin-top: 20px; }
     </style>
 </head>
@@ -120,6 +122,7 @@
             const cx = Math.floor(startX / CELL_SIZE);
             const cy = Math.floor(startY / CELL_SIZE);
 
+
         function updateGridFromSensors(pos, distances) {
             const cx = Math.floor(pos.x / CELL_SIZE);
             const cy = Math.floor(pos.y / CELL_SIZE);
@@ -128,7 +131,6 @@
                 grid.cells[cy][cx].explored = true;
                 lastPos = { x: cx, y: cy };
             }
-
 
             const sensorDefs = [
                 { angle: 0, dist: distances.front },
@@ -190,8 +192,13 @@
                 if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
                     updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
 
+
+                if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
+                    updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
+
                 if (data.pos_x != null && data.pos_y != null) {
                     updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.distances);
+
 
                 }
             } catch (e) {
