@@ -109,13 +109,50 @@
             }
         }
 
+
+        const CAR_WIDTH = 75;  // matches simulation scale
+        const CAR_HEIGHT = 40;
+
+        function updateGridFromSensors(pos, gyro, distances) {
+            const rad = gyro * Math.PI / 180;
+            const startX = pos.x + CAR_WIDTH / 2;
+            const startY = pos.y + CAR_HEIGHT / 2;
+            const cx = Math.floor(startX / CELL_SIZE);
+            const cy = Math.floor(startY / CELL_SIZE);
+
         function updateGridFromSensors(pos, distances) {
             const cx = Math.floor(pos.x / CELL_SIZE);
             const cy = Math.floor(pos.y / CELL_SIZE);
+
             if (grid.inBounds(cx, cy)) {
                 grid.cells[cy][cx].explored = true;
                 lastPos = { x: cx, y: cy };
             }
+
+
+            const sensorDefs = [
+                { angle: 0, dist: distances.front },
+                { angle: Math.PI, dist: distances.rear },
+                { angle: -Math.PI / 2, dist: distances.left },
+                { angle: Math.PI / 2, dist: distances.right }
+            ];
+
+            for (const s of sensorDefs) {
+                const ang = rad + s.angle;
+                const cells = Math.floor(s.dist / CELL_SIZE);
+                for (let i = 1; i <= cells; i++) {
+                    const px = startX + Math.cos(ang) * i * CELL_SIZE;
+                    const py = startY + Math.sin(ang) * i * CELL_SIZE;
+                    const gx = Math.floor(px / CELL_SIZE);
+                    const gy = Math.floor(py / CELL_SIZE);
+                    if (!grid.inBounds(gx, gy)) break;
+                    grid.cells[gy][gx].explored = true;
+                }
+                const ex = startX + Math.cos(ang) * s.dist;
+                const ey = startY + Math.sin(ang) * s.dist;
+                const ox = Math.floor(ex / CELL_SIZE);
+                const oy = Math.floor(ey / CELL_SIZE);
+
             const dirs = [
                 {dx: 0, dy: -1, dist: distances.front},
                 {dx: 0, dy: 1, dist: distances.rear},
@@ -132,6 +169,7 @@
                 }
                 const ox = cx + d.dx * steps;
                 const oy = cy + d.dy * steps;
+
                 if (grid.inBounds(ox, oy)) {
                     grid.cells[oy][ox].obstacle = true;
                 }
@@ -148,8 +186,13 @@
                 document.getElementById('rpm').textContent = data.rpm;
                 document.getElementById('gyro').textContent = data.gyro;
                 document.getElementById('distances').textContent = JSON.stringify(data.distances);
+
+                if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
+                    updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
+
                 if (data.pos_x != null && data.pos_y != null) {
                     updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.distances);
+
                 }
             } catch (e) {
                 console.error(e);
