@@ -13,6 +13,8 @@ class Car:
         self.speed = 0.0
         self.rpm = 0
         self.gyro = 0.0
+        self.pos_x = 0.0
+        self.pos_y = 0.0
         self.max_speed = MAX_TOTAL_SPEED
         self.distances = {
             'front': 0,
@@ -42,6 +44,8 @@ class Car:
         self.speed = round(random.uniform(0, self.max_speed), 2)
         self.rpm = int(self.speed * 100)
         self.gyro = round(random.uniform(0, 360), 1)
+        self.pos_x = round(random.uniform(0, 100), 2)
+        self.pos_y = round(random.uniform(0, 100), 2)
         self.distances = {k: int(random.uniform(0, 150)) for k in self.distances}
 
     def update_from_dict(self, data):
@@ -49,6 +53,8 @@ class Car:
         self.speed = float(data.get('speed', self.speed))
         self.rpm = int(data.get('rpm', self.rpm))
         self.gyro = float(data.get('gyro', self.gyro))
+        self.pos_x = float(data.get('pos_x', self.pos_x))
+        self.pos_y = float(data.get('pos_y', self.pos_y))
         distances = data.get('distances', {})
         for k in self.distances.keys():
             if k in distances:
@@ -62,6 +68,8 @@ def get_car_data():
         'speed': car.speed,
         'rpm': car.rpm,
         'gyro': car.gyro,
+        'pos_x': car.pos_x,
+        'pos_y': car.pos_y,
         'distances': car.distances
     })
 
@@ -69,7 +77,7 @@ def get_car_data():
 @app.route('/api/car', methods=['POST'])
 def set_car_data():
     data = request.get_json() or {}
-    required = ['speed', 'rpm', 'gyro', 'distances']
+    required = ['speed', 'rpm', 'gyro', 'pos_x', 'pos_y', 'distances']
     if not all(k in data for k in required):
         return jsonify({'error': 'invalid payload'}), 400
     distances = data['distances']
