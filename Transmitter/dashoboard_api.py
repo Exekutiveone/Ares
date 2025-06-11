@@ -12,6 +12,8 @@ class Car:
         self.speed = 0.0
         self.rpm = 0
         self.gyro = 0.0
+        self.pos_x = 0.0
+        self.pos_y = 0.0
         self.max_speed = MAX_TOTAL_SPEED
         self.distances = {
             'front': 0,
@@ -24,6 +26,8 @@ class Car:
         self.speed = data.get('speed', self.speed)
         self.rpm = data.get('rpm', self.rpm)
         self.gyro = data.get('gyro', self.gyro)
+        self.pos_x = data.get('pos_x', self.pos_x)
+        self.pos_y = data.get('pos_y', self.pos_y)
         distances = data.get('distances')
         if isinstance(distances, dict):
             for k in ['front', 'rear', 'left', 'right']:
@@ -39,6 +43,8 @@ def get_car_data():
         'speed': car.speed,
         'rpm': car.rpm,
         'gyro': car.gyro,
+        'pos_x': car.pos_x,
+        'pos_y': car.pos_y,
         'distances': car.distances
     })
 
@@ -54,6 +60,8 @@ def car_data():
             'speed': car.speed,
             'rpm': car.rpm,
             'gyro': car.gyro,
+            'pos_x': car.pos_x,
+            'pos_y': car.pos_y,
             'distances': car.distances
         })
     except Exception as e:
