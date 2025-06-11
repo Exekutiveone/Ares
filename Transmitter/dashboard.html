@@ -7,36 +7,7 @@
         body { font-family: Arial, sans-serif; background: #111; color: #eee; padding: 20px; }
         #data { margin-bottom: 20px; }
         video { max-width: 100%; height: auto; }
-        #controls {
-            display: inline-grid;
-            grid-template-areas:
-                '. up .'
-                'left stop right'
-                '. down .';
-            gap: 5px;
-            margin-top: 20px;
-        }
-        #controls button {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-        }
-        #up { grid-area: up; }
-        #down { grid-area: down; }
-        #left { grid-area: left; }
-        #right { grid-area: right; }
-        #stop { grid-area: stop; }
 
-        #maneuvers {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 20px;
-        }
-        #maneuvers button {
-            flex: 1 1 100px;
-            padding: 5px 10px;
-        }
 
         #gridCanvas { background: #222; border: 1px solid #555; margin-top: 20px; }
     </style>
@@ -54,23 +25,6 @@
     <!-- <video id="video" controls src="http://localhost:5001/api/video"></video> -->
     <video src="dummy-video.mp4" controls></video>
 
-    <div id="controls">
-        <button id="up">&#8593;</button>
-        <button id="left">&#8592;</button>
-        <button id="stop">&#9632;</button>
-        <button id="right">&#8594;</button>
-        <button id="down">&#8595;</button>
-    </div>
-
-    <div id="maneuvers">
-        <button id="alignLeft">Align Left</button>
-        <button id="alignRight">Align Right</button>
-        <button id="alignUp">Align Up</button>
-        <button id="alignDown">Align Down</button>
-        <button id="curveLeft">Curve Left</button>
-        <button id="curveRight">Curve Right</button>
-        <button id="circle">Circle</button>
-    </div>
 
     <script>
         const GRID_COLS = 20;
@@ -122,11 +76,6 @@
             const cx = Math.floor(startX / CELL_SIZE);
             const cy = Math.floor(startY / CELL_SIZE);
 
-
-        function updateGridFromSensors(pos, distances) {
-            const cx = Math.floor(pos.x / CELL_SIZE);
-            const cy = Math.floor(pos.y / CELL_SIZE);
-
             if (grid.inBounds(cx, cy)) {
                 grid.cells[cy][cx].explored = true;
                 lastPos = { x: cx, y: cy };
@@ -154,30 +103,13 @@
                 const ey = startY + Math.sin(ang) * s.dist;
                 const ox = Math.floor(ex / CELL_SIZE);
                 const oy = Math.floor(ey / CELL_SIZE);
-
-            const dirs = [
-                {dx: 0, dy: -1, dist: distances.front},
-                {dx: 0, dy: 1, dist: distances.rear},
-                {dx: -1, dy: 0, dist: distances.left},
-                {dx: 1, dy: 0, dist: distances.right}
-            ];
-            for (const d of dirs) {
-                const steps = Math.floor(d.dist / CELL_SIZE);
-                for (let i = 1; i <= steps; i++) {
-                    const x = cx + d.dx * i;
-                    const y = cy + d.dy * i;
-                    if (!grid.inBounds(x, y)) break;
-                    grid.cells[y][x].explored = true;
-                }
-                const ox = cx + d.dx * steps;
-                const oy = cy + d.dy * steps;
-
                 if (grid.inBounds(ox, oy)) {
                     grid.cells[oy][ox].obstacle = true;
                 }
             }
             drawGrid();
         }
+
 
         async function fetchData() {
             try {
@@ -188,18 +120,8 @@
                 document.getElementById('rpm').textContent = data.rpm;
                 document.getElementById('gyro').textContent = data.gyro;
                 document.getElementById('distances').textContent = JSON.stringify(data.distances);
-
                 if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
                     updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
-
-
-                if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
-                    updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
-
-                if (data.pos_x != null && data.pos_y != null) {
-                    updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.distances);
-
-
                 }
             } catch (e) {
                 console.error(e);
@@ -207,6 +129,7 @@
         }
         setInterval(fetchData, 1000);
         fetchData();
+
 
         async function fetchSpeed() {
             try {
@@ -232,31 +155,6 @@
             }
         });
 
-        async function sendCommand(action) {
-            try {
-                await fetch('http://localhost:5002/api/control', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action })
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        document.getElementById('up').addEventListener('click', () => sendCommand('up'));
-        document.getElementById('down').addEventListener('click', () => sendCommand('down'));
-        document.getElementById('left').addEventListener('click', () => sendCommand('left'));
-        document.getElementById('right').addEventListener('click', () => sendCommand('right'));
-        document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
-
-        document.getElementById('alignLeft').addEventListener('click', () => sendCommand('align_left'));
-        document.getElementById('alignRight').addEventListener('click', () => sendCommand('align_right'));
-        document.getElementById('alignUp').addEventListener('click', () => sendCommand('align_up'));
-        document.getElementById('alignDown').addEventListener('click', () => sendCommand('align_down'));
-        document.getElementById('curveLeft').addEventListener('click', () => sendCommand('curve_left'));
-        document.getElementById('curveRight').addEventListener('click', () => sendCommand('curve_right'));
-        document.getElementById('circle').addEventListener('click', () => sendCommand('circle'));
     </script>
 </body>
 </html>
