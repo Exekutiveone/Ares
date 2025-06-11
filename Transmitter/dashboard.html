@@ -26,6 +26,18 @@
         #left { grid-area: left; }
         #right { grid-area: right; }
         #stop { grid-area: stop; }
+
+        #maneuvers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        #maneuvers button {
+            flex: 1 1 100px;
+            padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +58,16 @@
         <button id="stop">&#9632;</button>
         <button id="right">&#8594;</button>
         <button id="down">&#8595;</button>
+    </div>
+
+    <div id="maneuvers">
+        <button id="alignLeft">Align Left</button>
+        <button id="alignRight">Align Right</button>
+        <button id="alignUp">Align Up</button>
+        <button id="alignDown">Align Down</button>
+        <button id="curveLeft">Curve Left</button>
+        <button id="curveRight">Curve Right</button>
+        <button id="circle">Circle</button>
     </div>
 
     <script>
@@ -106,6 +128,14 @@
         document.getElementById('left').addEventListener('click', () => sendCommand('left'));
         document.getElementById('right').addEventListener('click', () => sendCommand('right'));
         document.getElementById('stop').addEventListener('click', () => sendCommand('stop'));
+
+        document.getElementById('alignLeft').addEventListener('click', () => sendCommand('align_left'));
+        document.getElementById('alignRight').addEventListener('click', () => sendCommand('align_right'));
+        document.getElementById('alignUp').addEventListener('click', () => sendCommand('align_up'));
+        document.getElementById('alignDown').addEventListener('click', () => sendCommand('align_down'));
+        document.getElementById('curveLeft').addEventListener('click', () => sendCommand('curve_left'));
+        document.getElementById('curveRight').addEventListener('click', () => sendCommand('curve_right'));
+        document.getElementById('circle').addEventListener('click', () => sendCommand('circle'));
     </script>
 </body>
 </html>
