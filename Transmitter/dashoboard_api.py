@@ -2,6 +2,8 @@ from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import os
 
+MAX_TOTAL_SPEED = 30
+
 app = Flask(__name__)
 CORS(app)
 
@@ -10,6 +12,7 @@ class Car:
         self.speed = 0.0
         self.rpm = 0
         self.gyro = 0.0
+        self.max_speed = MAX_TOTAL_SPEED
         self.distances = {
             'front': 0,
             'rear': 0,
@@ -55,6 +58,21 @@ def car_data():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/speed', methods=['GET', 'POST'])
+def speed_limit():
+    if request.method == 'GET':
+        return jsonify({'max_speed': car.max_speed})
+    data = request.get_json() or {}
+    try:
+        value = float(data.get('max_speed'))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'invalid value'}), 400
+    if value > MAX_TOTAL_SPEED:
+        return jsonify({'error': 'exceeds limit'}), 400
+    car.max_speed = value
+    return jsonify({'max_speed': car.max_speed})
 
 @app.route('/api/video', methods=['GET'])
 def get_video():

@@ -35,6 +35,7 @@
         <p>RPM: <span id="rpm">-</span></p>
         <p>Gyro: <span id="gyro">-</span>°</p>
         <p>Distances: <span id="distances">-</span></p>
+        <p>Max Speed: <input type="number" id="maxSpeedInput" min="0" max="30"></p>
     </div>
     <!-- <video id="video" controls src="http://localhost:5001/api/video"></video> -->
     <video src="dummy-video.mp4" controls></video>
@@ -63,6 +64,30 @@
         }
         setInterval(fetchData, 1000);
         fetchData();
+
+        async function fetchSpeed() {
+            try {
+                const res = await fetch('http://localhost:5001/api/speed');
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('maxSpeedInput').value = data.max_speed;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        fetchSpeed();
+
+        document.getElementById('maxSpeedInput').addEventListener('change', async (e) => {
+            try {
+                await fetch('http://localhost:5001/api/speed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ max_speed: parseFloat(e.target.value) })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        });
 
         async function sendCommand(action) {
             try {

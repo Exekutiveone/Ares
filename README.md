@@ -86,6 +86,8 @@ The service listens on port `5001` and provides these endpoints:
 - `GET /api/car` – return the current telemetry values
 - `POST /api/car` – update the telemetry state with a JSON payload
 - `GET /api/video` – stream `dummy-video.mp4` if it is present
+- `GET /api/speed` – return the current speed limit
+- `POST /api/speed` – set a new speed limit (body: `{"max_speed": 20}`)
 
 Example data sent to `POST /api/car`:
 
@@ -147,6 +149,9 @@ python SimulateAsset/control_api.py
 ```
 
 This service listens on port `5002` as well.
+
+`GET /api/speed` returns the configured speed limit and `POST /api/speed` sets a
+new limit (JSON `{"max_speed": 20}`).
 
 `GET /api/control` returns the last command that was received:
 
