@@ -136,10 +136,12 @@ curl -X POST http://localhost:5002/api/control \
      -d '{"action": "forward"}'
 ```
 
-Valid actions are `forward`, `backward`, `left`, `right` and `stop` (the values
-`up` and `down` are accepted as synonyms for `forward` and `backward`). The
-implementation simply records the last action; integration with actual hardware
-can be added where indicated in the code.
+Valid actions are `forward`, `backward`, `left`, `right` and `stop`. The values
+`up` and `down` are accepted as synonyms for `forward` and `backward`. Additional
+maneuvers include `align_left`, `align_right`, `align_up`, `align_down`,
+`curve_left`, `curve_right` and `circle`. The implementation simply records the
+last action; integration with actual hardware can be added where indicated in
+the code.
 
 For the JavaScript simulation the same API is provided in
 `SimulateAsset/control_api.py`. Start it with:
