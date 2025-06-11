@@ -26,6 +26,7 @@
         #left { grid-area: left; }
         #right { grid-area: right; }
         #stop { grid-area: stop; }
+        #gridCanvas { background: #222; border: 1px solid #555; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -37,6 +38,7 @@
         <p>Distances: <span id="distances">-</span></p>
         <p>Max Speed: <input type="number" id="maxSpeedInput" min="0" max="30"></p>
     </div>
+    <canvas id="gridCanvas"></canvas>
     <!-- <video id="video" controls src="http://localhost:5001/api/video"></video> -->
     <video src="dummy-video.mp4" controls></video>
 
@@ -49,6 +51,87 @@
     </div>
 
     <script>
+        const GRID_COLS = 20;
+        const GRID_ROWS = 15;
+        const CELL_SIZE = 40;
+
+        class GridMap {
+            constructor(cols, rows) {
+                this.cols = cols;
+                this.rows = rows;
+                this.cellSize = CELL_SIZE;
+                this.cells = Array.from({length: rows}, () =>
+                    Array.from({length: cols}, () => ({ explored: false, obstacle: false })));
+            }
+            inBounds(x, y) { return x >= 0 && x < this.cols && y >= 0 && y < this.rows; }
+        }
+
+        const grid = new GridMap(GRID_COLS, GRID_ROWS);
+        const canvas = document.getElementById('gridCanvas');
+        const gctx = canvas.getContext('2d');
+        canvas.width = GRID_COLS * CELL_SIZE;
+        canvas.height = GRID_ROWS * CELL_SIZE;
+        let lastPos = null;
+
+        function drawGrid() {
+            for (let y = 0; y < grid.rows; y++) {
+                for (let x = 0; x < grid.cols; x++) {
+                    const cell = grid.cells[y][x];
+                    gctx.fillStyle = cell.obstacle ? '#f00' : cell.explored ? '#555' : '#222';
+                    gctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+                }
+            }
+            if (lastPos) {
+                gctx.fillStyle = '#0f0';
+                gctx.fillRect(lastPos.x * CELL_SIZE + CELL_SIZE / 4,
+                               lastPos.y * CELL_SIZE + CELL_SIZE / 4,
+                               CELL_SIZE / 2, CELL_SIZE / 2);
+            }
+        }
+
+        const CAR_WIDTH = 75;  // matches simulation scale
+        const CAR_HEIGHT = 40;
+
+        function updateGridFromSensors(pos, gyro, distances) {
+            const rad = gyro * Math.PI / 180;
+            const startX = pos.x + CAR_WIDTH / 2;
+            const startY = pos.y + CAR_HEIGHT / 2;
+            const cx = Math.floor(startX / CELL_SIZE);
+            const cy = Math.floor(startY / CELL_SIZE);
+            if (grid.inBounds(cx, cy)) {
+                grid.cells[cy][cx].explored = true;
+                lastPos = { x: cx, y: cy };
+            }
+
+            const sensorDefs = [
+                { angle: 0, dist: distances.front },
+                { angle: Math.PI, dist: distances.rear },
+                { angle: -Math.PI / 2, dist: distances.left },
+                { angle: Math.PI / 2, dist: distances.right }
+            ];
+
+            for (const s of sensorDefs) {
+                const ang = rad + s.angle;
+                const cells = Math.floor(s.dist / CELL_SIZE);
+                for (let i = 1; i <= cells; i++) {
+                    const px = startX + Math.cos(ang) * i * CELL_SIZE;
+                    const py = startY + Math.sin(ang) * i * CELL_SIZE;
+                    const gx = Math.floor(px / CELL_SIZE);
+                    const gy = Math.floor(py / CELL_SIZE);
+                    if (!grid.inBounds(gx, gy)) break;
+                    grid.cells[gy][gx].explored = true;
+                }
+                const ex = startX + Math.cos(ang) * s.dist;
+                const ey = startY + Math.sin(ang) * s.dist;
+                const ox = Math.floor(ex / CELL_SIZE);
+                const oy = Math.floor(ey / CELL_SIZE);
+                if (grid.inBounds(ox, oy)) {
+                    grid.cells[oy][ox].obstacle = true;
+                }
+            }
+            drawGrid();
+        }
+
         async function fetchData() {
             try {
                 const res = await fetch('http://localhost:5001/api/car');
@@ -58,6 +141,9 @@
                 document.getElementById('rpm').textContent = data.rpm;
                 document.getElementById('gyro').textContent = data.gyro;
                 document.getElementById('distances').textContent = JSON.stringify(data.distances);
+                if (data.pos_x != null && data.pos_y != null && data.gyro != null) {
+                    updateGridFromSensors({x: data.pos_x, y: data.pos_y}, data.gyro, data.distances);
+                }
             } catch (e) {
                 console.error(e);
             }
