@@ -3,6 +3,8 @@ from flask_cors import CORS
 import os
 import random
 
+MAX_TOTAL_SPEED = 30
+
 app = Flask(__name__)
 CORS(app)
 
@@ -11,6 +13,7 @@ class Car:
         self.speed = 0.0
         self.rpm = 0
         self.gyro = 0.0
+        self.max_speed = MAX_TOTAL_SPEED
         self.distances = {
             'front': 0,
             'rear': 0,
@@ -21,7 +24,7 @@ class Car:
     def control(self, action):
         """Very small state change based on a simple action."""
         if action == 'up':
-            self.speed = min(self.speed + 1, 30)
+            self.speed = min(self.speed + 1, self.max_speed)
             self.rpm = int(self.speed * 100)
         elif action == 'down':
             self.speed = max(self.speed - 1, 0)
@@ -36,7 +39,7 @@ class Car:
 
     def update_random(self):
         """Fill the fields with some random demo values."""
-        self.speed = round(random.uniform(0, 30), 2)
+        self.speed = round(random.uniform(0, self.max_speed), 2)
         self.rpm = int(self.speed * 100)
         self.gyro = round(random.uniform(0, 360), 1)
         self.distances = {k: int(random.uniform(0, 150)) for k in self.distances}

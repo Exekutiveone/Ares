@@ -14,6 +14,7 @@
 </head>
 <body>
     <h1>Control Unit (Use Arrow Keys)</h1>
+    <p>Max Speed: <input type="number" id="maxSpeedInput" min="0" max="30"></p>
 
     <script>
         let currentAction = null;
@@ -45,6 +46,30 @@
                 console.error(e);
             }
         };
+
+        async function fetchSpeed() {
+            try {
+                const res = await fetch('http://localhost:5002/api/speed');
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('maxSpeedInput').value = data.max_speed;
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        fetchSpeed();
+
+        document.getElementById('maxSpeedInput').addEventListener('change', async (e) => {
+            try {
+                await fetch('http://localhost:5002/api/speed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ max_speed: parseFloat(e.target.value) })
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        });
 
         document.addEventListener('keydown', (e) => {
             switch (e.key) {
