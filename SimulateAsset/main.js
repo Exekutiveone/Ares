@@ -46,6 +46,8 @@ function sendTelemetry(front, rear, left, right) {
       speed: car.speed,
       rpm: car.rpm,
       gyro: car.gyro,
+      pos_x: car.posX,
+      pos_y: car.posY,
       distances: { front, rear, left, right }
     })
   }).catch(err => console.error('sendTelemetry failed', err));
